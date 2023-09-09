@@ -1,12 +1,12 @@
 import ebookmeta
-
+from io import BytesIO
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askopenfilename
 import requests
 import json
 from dotenv import load_dotenv
 import os
-
+from PIL import Image
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -17,8 +17,9 @@ filename = askopenfilename() # show an "Open" dialog box and return the path to 
 def main(e_book_path):
     meta = ebookmeta.get_metadata(f'{e_book_path}')
     e = meta.title
-    title = e[0][0].strip()
-    #print(title)
+    split_text = e.split(" - ")
+    title = split_text[0]
+    print(title)
     url = "https://api.myanimelist.net/v2/manga"
     headers = {
         "X-MAL-CLIENT-ID": f"{client_id}"
@@ -55,7 +56,7 @@ def main(e_book_path):
                 "X-MAL-CLIENT-ID": f"{client_id}"
             }
             params = {
-                "fields": "main_picture,alternative_titles,main_picture,authors{first_name,last_name},mean,genres,start_date,background"
+                "fields": "main_picture,alternative_titles,main_picture,authors{first_name,last_name},mean,genres,start_date,synopsis,serialization"
             }
             response = requests.get(url, headers=headers, params=params)
             if response.status_code == 200:
@@ -69,8 +70,29 @@ def main(e_book_path):
             with open('data2.json',encoding='utf-8') as json_file:
                 json_file = json.load(json_file)
             meta.title = f'{title} - {json_file["alternative_titles"]["ja"]}'
-            meta.author_list = f'{json_file["authors"]["node"]["first_name"]} {json_file["authors"]["node"]["last_name"]}'
-            meta.description = f'{json_file["background"]}'
+            for i in json_file["authors"]:
+                meta.author_list = f'{i["node"]["first_name"]} {i["node"]["last_name"]}'
+            meta.description = f'{json_file["synopsis"]}'
+            for i in json_file["genres"]:
+                genrelist = []
+                genrelist.append(i["name"])
+                
+            meta.set_tag_list_from_string = f'{genrelist}'
+            #print(meta.tag_list)
+            for i in json_file["serialization"]:
+                meta.publisher = f'{i["node"]["name"]}'
+                #print(meta.publisher)
+            author = meta.author_list
+            author = ''.join(author)
+            author = meta.author_list
+            response = requests.get(f'{json_file["main_picture"]["large"]}')
+            img = Image.open(BytesIO(response.content))
+
+            meta.cover_image_data = img
+            ebookmeta.set_metadata(f'{e_book_path}', meta)
+            
+            
+
     else:
         print("Error:", response.status_code)
 main(filename)
