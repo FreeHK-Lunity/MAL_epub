@@ -7,7 +7,11 @@ import json
 from dotenv import load_dotenv
 import os
 from PIL import Image
+from scipy.spatial.distance import hamming
 
+
+
+print(hamming_distance)
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 print(client_id)
@@ -47,16 +51,32 @@ def main(e_book_path):
                 get_the_id = item['node']['id']
                 break
             else:
-                title_exists = False
-                print(f'you`re out of luck m8, {title} does not exist in MAL :(')
-                break
+                #title_exists = False
+                #print(f'you`re out of luck m8, {title} does not exist in MAL :(')
+                title = e.strip()
+                for item in json_file['data']:
+                    if title == item['node']['title'] or item['node']['alternative_titles']['synonyms'] == title or item['node']['alternative_titles']['en'] == title or item['node']['alternative_titles']['ja'] == title:
+                        title_exists = True
+                        print(f'{title} exists in MAL!!')
+                        get_the_id = item['node']['id']
+                        break
+                    else:
+                        title = e.strip()
+                        print(title)
+                        hamming_distance = hamming(values1, values2)
+                        title_exists = False
+                        '''
+                        print(f'you`re out of luck m8, {title} does not exist in MAL :(')
+                        break
+                        '''
+            
         if title_exists == True:
             url = f"https://api.myanimelist.net/v2/manga/{get_the_id}"
             headers = {
                 "X-MAL-CLIENT-ID": f"{client_id}"
             }
             params = {
-                "fields": "main_picture,alternative_titles,main_picture,authors{first_name,last_name},mean,genres,start_date,synopsis,serialization"
+                "fields": "main_picture,alternative_titles,main_picture,authors{first_name,last_name},mean,genres,start_date,synopsis,serialization,start_date"
             }
             response = requests.get(url, headers=headers, params=params)
             if response.status_code == 200:
@@ -71,7 +91,7 @@ def main(e_book_path):
                 json_file = json.load(json_file)
             meta.title = f'{title} - {json_file["alternative_titles"]["ja"]}'
             for i in json_file["authors"]:
-                meta.author_list = f'{i["node"]["first_name"]} {i["node"]["last_name"]}'
+                meta.set_author_list_from_string(f'{i["node"]["first_name"]} {i["node"]["last_name"]}')
             meta.description = f'{json_file["synopsis"]}'
             for i in json_file["genres"]:
                 genrelist = []
@@ -82,9 +102,6 @@ def main(e_book_path):
             for i in json_file["serialization"]:
                 meta.publisher = f'{i["node"]["name"]}'
                 #print(meta.publisher)
-            author = meta.author_list
-            author = ''.join(author)
-            author = meta.author_list
             response = requests.get(f'{json_file["main_picture"]["large"]}')
             img = Image.open(BytesIO(response.content))
 
