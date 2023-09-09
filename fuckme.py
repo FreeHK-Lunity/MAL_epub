@@ -1,4 +1,5 @@
 import ebookmeta
+import ebooklib
 from ebooklib import epub
 from io import BytesIO
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 import os
 from PIL import Image
 from scipy.spatial.distance import hamming
+from ebooklib.utils import debug
 
 
 import threading
@@ -163,9 +165,18 @@ def main(e_book_path):
             #<meta name="cover" content="image_0000"/>
             book_forced_to_make_a_new_one.set_cover("image_0000", image_data)
             book_forced_to_make_a_new_one.set_direction('ltr')
-            getallitems = book.get_items()
-            for i in getallitems:
-                book_forced_to_make_a_new_one.add_item(i)
+            for item in book.get_items():
+                book_forced_to_make_a_new_one.add_item(item)
+                item.get_content()
+            print(book_forced_to_make_a_new_one.spine)
+            for item in book_forced_to_make_a_new_one.get_items():
+                if item.get_type() == ebooklib.ITEM_DOCUMENT:
+                    print('==================================')
+                    print('NAME : ', item.get_name())
+                    print('----------------------------------')
+                    print(item.get_content())
+                    print('==================================')
+
             # Split the file path into directory and file name
             directory, filename = os.path.split(e_book_path)
 
@@ -173,16 +184,7 @@ def main(e_book_path):
             directory_without_extension = os.path.splitext(directory)[0]
             
             epub.write_epub(f'{directory_without_extension}/{title}.epub', book_forced_to_make_a_new_one)
-            def write_epub_thread(directory, title, book):
-                epub.write_epub(f'{directory}/{title}.epub', book)
 
-            # Create a new thread
-            thread = threading.Thread(target=write_epub_thread, args=(directory_without_extension, title, book_forced_to_make_a_new_one))
-
-            # Start the thread
-            thread.start()
-
-            # Wait for the thread to complete
-            thread.join()
-            
+    else:
+        print("Fatal Error:", response.status_code)
 main(filename)

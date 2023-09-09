@@ -8,6 +8,12 @@ from dotenv import load_dotenv
 import os
 from PIL import Image
 
+
+import ebooklib
+from ebooklib import epub
+from ebooklib.utils import debug
+
+
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 print(client_id)
