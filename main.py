@@ -1,4 +1,5 @@
-from ebooklib import epub
+import ebookmeta
+
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askopenfilename
 import requests
@@ -14,13 +15,13 @@ Tk().withdraw() # we don't want a full GUI, so keep the root window from appeari
 filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
 
 def main(e_book_path):
-    book = epub.read_epub(f'{e_book_path}')
-    e = book.get_metadata('DC', 'title')
+    meta = ebookmeta.get_metadata(f'{e_book_path}')
+    e = meta.title
     title = e[0][0].strip()
     #print(title)
     url = "https://api.myanimelist.net/v2/manga"
     headers = {
-        "X-MAL-CLIENT-ID": "239584adfd617ad9c8f7e817be12af25"
+        "X-MAL-CLIENT-ID": f"{client_id}"
     }
     params = {
         "q": f"{title}",
@@ -51,10 +52,10 @@ def main(e_book_path):
         if title_exists == True:
             url = f"https://api.myanimelist.net/v2/manga/{get_the_id}"
             headers = {
-                "X-MAL-CLIENT-ID": "239584adfd617ad9c8f7e817be12af25"
+                "X-MAL-CLIENT-ID": f"{client_id}"
             }
             params = {
-                "fields": f"main_picture,alternative_titles,main_picture,authors"
+                "fields": "main_picture,alternative_titles,main_picture,authors{first_name,last_name},mean,genres,start_date,background"
             }
             response = requests.get(url, headers=headers, params=params)
             if response.status_code == 200:
@@ -67,8 +68,9 @@ def main(e_book_path):
             #load json file
             with open('data2.json',encoding='utf-8') as json_file:
                 json_file = json.load(json_file)
-            book.set_title(f'{title}')
-                
+            meta.title = f'{title} - {json_file["alternative_titles"]["ja"]}'
+            meta.author_list = f'{json_file["authors"]["node"]["first_name"]} {json_file["authors"]["node"]["last_name"]}'
+            meta.description = f'{json_file["background"]}'
     else:
         print("Error:", response.status_code)
 main(filename)
