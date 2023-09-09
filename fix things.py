@@ -16,10 +16,19 @@ filename = askopenfilename() # show an "Open" dialog box and return the path to 
 meta = ebookmeta.get_metadata(f'{filename}')
 
 print(meta)
-'''author = meta.author_list
+'''
+author = meta.author_list
 author2 = ''.join(author)
 meta.author_list = author2
 meta.set_author_list_from_string(author2)
 ebookmeta.set_metadata(f'{filename}', meta)
 meta = ebookmeta.get_metadata(f'{filename}')
-print(meta.author_list)'''
+print(meta.author_list)
+'''
+'''
+with open('data2.json',encoding='utf-8') as json_file:
+    json_file = json.load(json_file)
+json_file["synopsis"] = meta.description
+ebookmeta.set_metadata(f'{filename}', meta)
+meta = ebookmeta.get_metadata(f'{filename}')
+'''

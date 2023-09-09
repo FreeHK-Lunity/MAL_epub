@@ -1,4 +1,5 @@
 import ebookmeta
+from ebooklib import epub
 from io import BytesIO
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askopenfilename
@@ -9,6 +10,8 @@ import os
 from PIL import Image
 from scipy.spatial.distance import hamming
 
+
+import threading
 #https://machinelearningknowledge.ai/ways-to-calculate-levenshtein-distance-edit-distance-in-python/
 def levenshtein_distance(s, t):
     m = len(s)
@@ -46,11 +49,13 @@ Tk().withdraw() # we don't want a full GUI, so keep the root window from appeari
 filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
 
 def main(e_book_path):
-    meta = ebookmeta.get_metadata(f'{e_book_path}')
-    e = meta.title
-    split_text = e.split(" - ")
-    title = split_text[0]
+    book = epub.read_epub(f'{e_book_path}')
+    book_forced_to_make_a_new_one = epub.EpubBook()
+    meta = epub.read_epub(f'{e_book_path}')
+    e = meta.get_metadata('DC', 'title')
+    title = e[0][0].strip()
     print(title)
+    #print(e)
     url = "https://api.myanimelist.net/v2/manga"
     headers = {
         "X-MAL-CLIENT-ID": f"{client_id}"
@@ -81,7 +86,8 @@ def main(e_book_path):
             else:
                 #title_exists = False
                 #print(f'you`re out of luck m8, {title} does not exist in MAL :(')
-                title = e.strip()
+                split_text = e[0][0].split(" - ")
+                title = split_text[0]
                 if title == item['node']['title'] or item['node']['alternative_titles']['synonyms'] == title or item['node']['alternative_titles']['en'] == title or item['node']['alternative_titles']['ja'] == title:
                     title_exists = True
                     print(f'{title} exists in MAL!!')
@@ -115,8 +121,6 @@ def main(e_book_path):
                             title_exists = False
                             print(f'you`re out of luck m8, {title} does not exist in MAL :(')
                             break
-                        
-            
         if title_exists == True:
             url = f"https://api.myanimelist.net/v2/manga/{get_the_id}"
             headers = {
@@ -136,28 +140,49 @@ def main(e_book_path):
             #load json file
             with open('data2.json',encoding='utf-8') as json_file:
                 json_file = json.load(json_file)
-            meta.title = f'{title} - {json_file["alternative_titles"]["ja"]}'
+
+            
+            ##########REIMPLEMENTING IN EBOKLIB############
+            book_forced_to_make_a_new_one.set_title(f'{title} - {json_file["alternative_titles"]["ja"]}')
             for i in json_file["authors"]:
-                meta.set_author_list_from_string(f'{i["node"]["first_name"]} {i["node"]["last_name"]}')
-            json_file["synopsis"] = meta.description
-            print(meta.description)
+                book_forced_to_make_a_new_one.add_author(f'{i["node"]["first_name"]} {i["node"]["last_name"]}')
+                #print(book_forced_to_make_a_new_one.get_metadata('DC', 'creator'))
+            book_forced_to_make_a_new_one.add_metadata('DC', 'description', f'{json_file["synopsis"]}')
             for i in json_file["genres"]:
                 genrelist = []
                 genrelist.append(i["name"])
-                
-            meta.set_tag_list_from_string = f'{genrelist}'
+                book_forced_to_make_a_new_one.add_metadata('DC', 'subject', f'{json_file["synopsis"]}')
+            
             #print(meta.tag_list)
             for i in json_file["serialization"]:
-                meta.publisher = f'{i["node"]["name"]}'
+                book_forced_to_make_a_new_one.add_metadata('DC', 'publisher', f'{i["node"]["name"]}')
                 #print(meta.publisher)
             response = requests.get(f'{json_file["main_picture"]["large"]}')
             img = Image.open(BytesIO(response.content))
+            image_data = img.tobytes()
+            #<meta name="cover" content="image_0000"/>
+            book_forced_to_make_a_new_one.set_cover("image_0000", image_data)
+            book_forced_to_make_a_new_one.set_direction('ltr')
+            getallitems = book.get_items()
+            for i in getallitems:
+                book_forced_to_make_a_new_one.add_item(i)
+            # Split the file path into directory and file name
+            directory, filename = os.path.split(e_book_path)
 
-            meta.cover_image_data = img
-            ebookmeta.set_metadata(f'{e_book_path}', meta)
+            # Remove the file extension
+            directory_without_extension = os.path.splitext(directory)[0]
             
-            
+            epub.write_epub(f'{directory_without_extension}/{title}.epub', book_forced_to_make_a_new_one)
+            def write_epub_thread(directory, title, book):
+                epub.write_epub(f'{directory}/{title}.epub', book)
 
-    else:
-        print("Fatal Error:", response.status_code)
+            # Create a new thread
+            thread = threading.Thread(target=write_epub_thread, args=(directory_without_extension, title, book_forced_to_make_a_new_one))
+
+            # Start the thread
+            thread.start()
+
+            # Wait for the thread to complete
+            thread.join()
+            
 main(filename)
