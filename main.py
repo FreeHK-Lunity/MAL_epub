@@ -9,9 +9,36 @@ import os
 from PIL import Image
 from scipy.spatial.distance import hamming
 
+#https://machinelearningknowledge.ai/ways-to-calculate-levenshtein-distance-edit-distance-in-python/
+def levenshtein_distance(s, t):
+    m = len(s)
+    n = len(t)
+    d = [[0] * (n + 1) for i in range(m + 1)]  
+
+    for i in range(1, m + 1):
+        d[i][0] = i
+
+    for j in range(1, n + 1):
+        d[0][j] = j
+    
+    for j in range(1, n + 1):
+        for i in range(1, m + 1):
+            if s[i - 1] == t[j - 1]:
+                cost = 0
+            else:
+                cost = 1
+            d[i][j] = min(d[i - 1][j] + 1,      # deletion
+                          d[i][j - 1] + 1,      # insertion
+                          d[i - 1][j - 1] + cost) # substitution   
+
+    return d[m][n]
 
 
-print(hamming_distance)
+
+
+
+
+
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 print(client_id)
@@ -54,21 +81,27 @@ def main(e_book_path):
                 #title_exists = False
                 #print(f'you`re out of luck m8, {title} does not exist in MAL :(')
                 title = e.strip()
-                for item in json_file['data']:
-                    if title == item['node']['title'] or item['node']['alternative_titles']['synonyms'] == title or item['node']['alternative_titles']['en'] == title or item['node']['alternative_titles']['ja'] == title:
-                        title_exists = True
+                if title == item['node']['title'] or item['node']['alternative_titles']['synonyms'] == title or item['node']['alternative_titles']['en'] == title or item['node']['alternative_titles']['ja'] == title:
+                    title_exists = True
+                    print(f'{title} exists in MAL!!')
+                    get_the_id = item['node']['id']
+                    break
+                else:
+                    title = e.strip()
+                    string1 = title
+                    string2 = item['node']['title']
+                    title_exists = False
+                    l_dist = levenshtein_distance(string1, string2)
+                    if l_dist <= 60:
                         print(f'{title} exists in MAL!!')
                         get_the_id = item['node']['id']
+                        title_exists = True
                         break
                     else:
-                        title = e.strip()
-                        print(title)
-                        hamming_distance = hamming(values1, values2)
                         title_exists = False
-                        '''
                         print(f'you`re out of luck m8, {title} does not exist in MAL :(')
                         break
-                        '''
+                        
             
         if title_exists == True:
             url = f"https://api.myanimelist.net/v2/manga/{get_the_id}"
@@ -93,6 +126,7 @@ def main(e_book_path):
             for i in json_file["authors"]:
                 meta.set_author_list_from_string(f'{i["node"]["first_name"]} {i["node"]["last_name"]}')
             meta.description = f'{json_file["synopsis"]}'
+            print(meta.description)
             for i in json_file["genres"]:
                 genrelist = []
                 genrelist.append(i["name"])
@@ -111,5 +145,5 @@ def main(e_book_path):
             
 
     else:
-        print("Error:", response.status_code)
+        print("Fatal Error:", response.status_code)
 main(filename)
