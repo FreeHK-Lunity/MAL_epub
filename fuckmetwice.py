@@ -11,6 +11,7 @@ import os
 from PIL import Image
 from scipy.spatial.distance import hamming
 from ebooklib.utils import debug
+import re
 import threading
 #https://machinelearningknowledge.ai/ways-to-calculate-levenshtein-distance-edit-distance-in-python/
 def levenshtein_distance(s, t):
@@ -37,7 +38,15 @@ def levenshtein_distance(s, t):
     return d[m][n]
 
 
+def is_windows_illegal(filename):
+    illegal_chars = r'[<>:"/\\|?*\x00-\x1F]'
+    match = re.search(illegal_chars, filename)
+    return match is not None
 
+def sanitize_filename(filename):
+    illegal_chars = r'[<>:"/\\|?*\x00-\x1F]'
+    sanitized_filename = re.sub(illegal_chars, '_', filename)
+    return sanitized_filename
 
 
 
@@ -137,9 +146,13 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         directory_without_extension = os.path.splitext(directory)[0]
         return directory_without_extension
     title = get_opf_title(opf_location)
-
-
-
+    print(title)
+    #
+    title = title.strip()
+    print(title)
+    title = sanitize_filename(title)
+    print(title)
+    pause()
     url = "https://api.myanimelist.net/v2/manga"
     headers = {
         "X-MAL-CLIENT-ID": f"{client_id}"
@@ -239,28 +252,28 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                 author = f'{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}'
                 title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
                 dir_of_file = get_orig_filename(filename)
-                
-                if os.path.isdir(f'{dir_of_file}/{author}/{title.strip(".")}') == False:
-                    os.makedirs(f'{dir_of_file}/{author}/{title.strip(".")}')
+                title = sanitize_filename(title)
+                if os.path.isdir(f'{dir_of_file}/{author}/{title.strip(".:")}') == False:
+                    os.makedirs(f'{dir_of_file}/{author}/{title.strip(".:")}')
                 else:
                     pass
                 #copy everything from temp folder to new folder and delete the temp folder
-                os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title.strip(".")}" /s /e')
+                os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title.strip(".:")}" /s /e')
                 os.system(f'rmdir /s /q "{dir_of_file}/temp"')
             for i in root:
                 for j in i:
                     if j.tag == "{http://purl.org/dc/elements/1.1/}identifier":
                         future_id = j.text
                         break
+            
 
-
-
+            title = sanitize_filename(title)
             dir_of_file = get_orig_filename(filename)
             print(title)
             try:
-                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".")}/OEBPS/content.opf')
+                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".:")}/OEBPS/content.opf')
             except:
-                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".")}/EPUB/content.opf')
+                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".:")}/EPUB/content.opf')
 
             root = tree.getroot()
             declaration = ET.Element('xml', version='1.0', encoding='utf-8')
@@ -325,14 +338,15 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                     cover.set('content', 'cover')
                     i.append(cover)
                     title.text.strip('.')
+                    title = sanitize_filename(title.text)
                     filename = "cover.jpg" # Replace with your image name
                     response = requests.get(f'{json_file["main_picture"]["large"]}')
                     if response.status_code == 200: # Check if the request was successful
                         try:
-                            with open(f'{dir_of_file}/{author}/{title.text.strip(".")}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
+                            with open(f'{dir_of_file}/{author}/{title.strip(".:")}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
                                 f.write(response.content) # Write the content of the response to the file
                         except:
-                            with open(f'{dir_of_file}/{author}/{title.text.strip(".")}/EPUB/{filename}', "wb") as f:
+                            with open(f'{dir_of_file}/{author}/{title.strip(".:")}/EPUB/{filename}', "wb") as f:
                                 f.write(response.content)
 
                             
@@ -344,10 +358,10 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
 
                 # Insert the XML declaration at the beginning of the root element
             try:    
-                tree.write(f'{dir_of_file}/{creator.text}/{title.text.strip(".")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
+                tree.write(f'{dir_of_file}/{creator.text}/{title.strip(".:")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
             except:
-                tree.write(f'{dir_of_file}/{creator.text}/{title.text.strip(".")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
-                
+                tree.write(f'{dir_of_file}/{creator.text}/{title.strip(".:")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
+
         def add_folder_to_zip(folder_path, zip_file_path):
             if os.path.exists(zip_file_path):
                 os.remove(zip_file_path)
@@ -364,8 +378,8 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                         
 
         # Specify the folder path and zip file path
-        folder_path = f'{dir_of_file}/{creator.text}/{title.text}'
-        zip_file_path = f'{dir_of_file}/{creator.text}/{title.text}/{title.text}.epub'
+        folder_path = f'{dir_of_file}/{creator.text}/{title}'
+        zip_file_path = f'{dir_of_file}/{creator.text}/{title}/{title}.epub'
 
         # Call the function to add the folder to the zip file
         add_folder_to_zip(folder_path, zip_file_path)
@@ -378,6 +392,6 @@ print(filename2)
 
 opf_location = find_opf(filename2)
 print(opf_location)
-pause()
+
 main(filename,opf_location,filename,True)
 #pause = input('pause')
