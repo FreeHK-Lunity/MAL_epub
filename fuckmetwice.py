@@ -115,6 +115,8 @@ def get_opf_title(filename):
                 break
 
 
+def pause():
+    pause = input('pause')
 
 
 
@@ -159,7 +161,6 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         with open('data.json',encoding='utf-8') as json_file:
             json_file = json.load(json_file)
         title.strip('\n')
-        print(title)
         for item in json_file['data']:
             '''            
             if '\n' in title:
@@ -233,39 +234,34 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
             root = tree.getroot()
             #make a new folder using author from xml
             if make_a_new_folder == True:
-                for i in root:
-                    for e in i:
-                        if e.tag == '{http://purl.org/dc/elements/1.1/}title':
-                            print(e.text)
-                            title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
-                        if e.tag == '{http://purl.org/dc/elements/1.1/}creator':
-                            print(e.text)
-                            author = e.text
-                            break
+                
+
+                author = f'{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}'
+                title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
                 dir_of_file = get_orig_filename(filename)
-                if os.path.isdir(f'{dir_of_file}/{author}/{title}') == False:
-                    os.makedirs(f'{dir_of_file}/{author}/{title}')
+                
+                if os.path.isdir(f'{dir_of_file}/{author}/{title.strip(".")}') == False:
+                    os.makedirs(f'{dir_of_file}/{author}/{title.strip(".")}')
                 else:
                     pass
                 #copy everything from temp folder to new folder and delete the temp folder
-                os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title}" /s /e')
+                os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title.strip(".")}" /s /e')
                 os.system(f'rmdir /s /q "{dir_of_file}/temp"')
             for i in root:
                 for j in i:
                     if j.tag == "{http://purl.org/dc/elements/1.1/}identifier":
                         future_id = j.text
                         break
-            for i in root:
-                for e in i:
-                    if e.tag == '{http://purl.org/dc/elements/1.1/}title':
-                        print(e.text)
-                        title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
-                    if e.tag == '{http://purl.org/dc/elements/1.1/}creator':
-                        print(e.text)
-                        author = e.text
-                        break
+
+
+
             dir_of_file = get_orig_filename(filename)
-            tree = ET.parse(f'{dir_of_file}/{author}/{title}/OEBPS/content.opf')
+            print(title)
+            try:
+                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".")}/OEBPS/content.opf')
+            except:
+                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".")}/EPUB/content.opf')
+
             root = tree.getroot()
             declaration = ET.Element('xml', version='1.0', encoding='utf-8')
             root.insert(0, declaration)
@@ -328,12 +324,17 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                     cover.set('name', 'cover')
                     cover.set('content', 'cover')
                     i.append(cover)
-                    
+                    title.text.strip('.')
                     filename = "cover.jpg" # Replace with your image name
                     response = requests.get(f'{json_file["main_picture"]["large"]}')
                     if response.status_code == 200: # Check if the request was successful
-                        with open(f'{dir_of_file}/{author}/{title.text}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
-                            f.write(response.content) # Write the content of the response to the file
+                        try:
+                            with open(f'{dir_of_file}/{author}/{title.text.strip(".")}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
+                                f.write(response.content) # Write the content of the response to the file
+                        except:
+                            with open(f'{dir_of_file}/{author}/{title.text.strip(".")}/EPUB/{filename}', "wb") as f:
+                                f.write(response.content)
+
                             
                     else:
                         print("cover could not be downloaded")
@@ -342,9 +343,11 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                 
 
                 # Insert the XML declaration at the beginning of the root element
+            try:    
+                tree.write(f'{dir_of_file}/{creator.text}/{title.text.strip(".")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
+            except:
+                tree.write(f'{dir_of_file}/{creator.text}/{title.text.strip(".")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
                 
-            tree.write(f'{dir_of_file}/{author}/{title.text}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
-
         def add_folder_to_zip(folder_path, zip_file_path):
             if os.path.exists(zip_file_path):
                 os.remove(zip_file_path)
@@ -361,8 +364,8 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                         
 
         # Specify the folder path and zip file path
-        folder_path = f'{dir_of_file}/{author}/{title.text}'
-        zip_file_path = f'{dir_of_file}/{author}/{title.text}/{title.text}.epub'
+        folder_path = f'{dir_of_file}/{creator.text}/{title.text}'
+        zip_file_path = f'{dir_of_file}/{creator.text}/{title.text}/{title.text}.epub'
 
         # Call the function to add the folder to the zip file
         add_folder_to_zip(folder_path, zip_file_path)
@@ -372,7 +375,9 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         print("Fatal Error:", response.status_code)
 filename2 = extract_epub(filename)
 print(filename2)
+
 opf_location = find_opf(filename2)
 print(opf_location)
+pause()
 main(filename,opf_location,filename,True)
 #pause = input('pause')
