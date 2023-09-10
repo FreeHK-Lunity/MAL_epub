@@ -1,2 +1,3 @@
 # MAL_epub
-To use the python script, simply choose your manga of choice and the python script will try to add a cover and some metadata to your epub file.
+Python script that has a 90% success rate at adding metadata to your epub file
+Use fuckmetwice.py to use
