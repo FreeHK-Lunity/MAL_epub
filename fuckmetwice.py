@@ -128,7 +128,7 @@ def get_opf_title(filename):
 
 
 
-def main(e_book_path,opf_location,filename):
+def main(e_book_path,opf_location,filename,make_a_new_folder):
     def get_orig_filename(filename):
         directory, filename = os.path.split(filename)
         # Remove the file extension
@@ -158,7 +158,14 @@ def main(e_book_path,opf_location,filename):
         #load json file
         with open('data.json',encoding='utf-8') as json_file:
             json_file = json.load(json_file)
+        title.strip('\n')
+        print(title)
         for item in json_file['data']:
+            '''            
+            if '\n' in title:
+            title = title.replace('\n', '')
+            title.strip()
+            '''
             if title == item['node']['title'] or item['node']['alternative_titles']['synonyms'] == title or item['node']['alternative_titles']['en'] == title or item['node']['alternative_titles']['ja'] == title:
                 title_exists = True
                 print(f'{title} exists in MAL!!')
@@ -225,22 +232,140 @@ def main(e_book_path,opf_location,filename):
             tree = ET.parse(opf_location)
             root = tree.getroot()
             #make a new folder using author from xml
+            if make_a_new_folder == True:
+                for i in root:
+                    for e in i:
+                        if e.tag == '{http://purl.org/dc/elements/1.1/}title':
+                            print(e.text)
+                            title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
+                        if e.tag == '{http://purl.org/dc/elements/1.1/}creator':
+                            print(e.text)
+                            author = e.text
+                            break
+                dir_of_file = get_orig_filename(filename)
+                if os.path.isdir(f'{dir_of_file}/{author}/{title}') == False:
+                    os.makedirs(f'{dir_of_file}/{author}/{title}')
+                else:
+                    pass
+                #copy everything from temp folder to new folder and delete the temp folder
+                os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title}" /s /e')
+                os.system(f'rmdir /s /q "{dir_of_file}/temp"')
+            for i in root:
+                for j in i:
+                    if j.tag == "{http://purl.org/dc/elements/1.1/}identifier":
+                        future_id = j.text
+                        break
             for i in root:
                 for e in i:
                     if e.tag == '{http://purl.org/dc/elements/1.1/}title':
                         print(e.text)
-                        title = e.text
+                        title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
+                    if e.tag == '{http://purl.org/dc/elements/1.1/}creator':
+                        print(e.text)
+                        author = e.text
                         break
             dir_of_file = get_orig_filename(filename)
-            if os.path.isdir(f'{dir_of_file}/{title}') == False:
-                os.mkdir(f'{dir_of_file}/{title}')
-            else:
-                pass
-            #copy everything from temp folder to new folder and delete the temp folder
-            os.system(f'robocopy temp {dir_of_file}/{title} /s /e')
-            os.system(f'rmdir /s /q temp')
+            tree = ET.parse(f'{dir_of_file}/{author}/{title}/OEBPS/content.opf')
+            root = tree.getroot()
+            declaration = ET.Element('xml', version='1.0', encoding='utf-8')
+            root.insert(0, declaration)
+            for i in root:
+                if i.tag == "{http://www.idpf.org/2007/opf}metadata":
+                    i.clear()
+                    # Create new child elements
+                    title = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+                    title.text = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
+                    i.append(title)
+                    language = ET.Element('{http://purl.org/dc/elements/1.1/}language')
+                    language.text = 'en'
+                    i.append(language)
+                    identifier = ET.Element('{http://purl.org/dc/elements/1.1/}identifier')
+                    identifier.set('id', f'{future_id}')
+                    identifier.set('{http://www.idpf.org/2007/opf}scheme', 'UUID')
+                    identifier.text = f'{future_id}'
+                    i.append(identifier)
 
-            
+
+                    if bool(json_file['serialization']) == False:
+                        pass
+                    else:
+                        for e in json_file['serialization']:
+                            publisher = ET.Element('{http://purl.org/dc/elements/1.1/}publisher')
+                            publisher.text = f'{e["node"]["name"]}'
+                            i.append(publisher)
+                    if bool(json_file["alternative_titles"]['synonyms']) == False:
+                        pass
+                    else:
+                        alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+                        alternative_titles.text = f'{json_file["alternative_titles"]["synonyms"]}'
+                        i.append(alternative_titles)
+
+
+                    alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+                    alternative_titles.text = f'{json_file["alternative_titles"]["en"]}'
+                    i.append(alternative_titles)
+                    alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+                    alternative_titles.text = f'{json_file["alternative_titles"]["ja"]}'
+                    i.append(alternative_titles)
+                    for e in json_file['genres']:
+                        subject = ET.Element('{http://purl.org/dc/elements/1.1/}subject')
+                        subject.text = f'{e["name"]}'
+                        i.append(subject)
+                    for e in json_file['authors']:
+                        creator = ET.Element('{http://purl.org/dc/elements/1.1/}creator')
+                        creator.set('{http://www.idpf.org/2007/opf}role', 'aut')
+                        creator.set('{http://www.idpf.org/2007/opf}file-as', f'{e["node"]["last_name"]}, {e["node"]["first_name"]}')
+                        creator.text = f'{e["node"]["first_name"]} {e["node"]["last_name"]}'
+                        i.append(creator)
+                    description = ET.Element('{http://purl.org/dc/elements/1.1/}description')
+                    description.text = f'{json_file["synopsis"]}'
+                    i.append(description)
+                    date = ET.Element('{http://purl.org/dc/elements/1.1/}date')
+                    date.text = f'{json_file["start_date"]}'
+                    i.append(date)
+                    #<meta name="cover" content="cover"/>
+                    cover = ET.Element('{http://www.idpf.org/2007/opf}meta')
+                    cover.set('name', 'cover')
+                    cover.set('content', 'cover')
+                    i.append(cover)
+                    
+                    filename = "cover.jpg" # Replace with your image name
+                    response = requests.get(f'{json_file["main_picture"]["large"]}')
+                    if response.status_code == 200: # Check if the request was successful
+                        with open(f'{dir_of_file}/{author}/{title.text}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
+                            f.write(response.content) # Write the content of the response to the file
+                            
+                    else:
+                        print("cover could not be downloaded")
+                if i.tag == '{http://www.idpf.org/2007/opf}manifest':
+                    i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'cover.jpg','id': 'cover',  'media-type': 'image/jpeg'}))
+                
+
+                # Insert the XML declaration at the beginning of the root element
+                
+            tree.write(f'{dir_of_file}/{author}/{title.text}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
+
+        def add_folder_to_zip(folder_path, zip_file_path):
+            if os.path.exists(zip_file_path):
+                os.remove(zip_file_path)
+
+            with zipfile.ZipFile(zip_file_path, 'x', zipfile.ZIP_DEFLATED) as zipf:
+                for root, _, files in os.walk(folder_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        if file_path == 'D:/users/user/Documents/Mangas/Mamahaha no Tsurego ga Moto Kanodatta/Kyousuke Kamishiro/継母の連れ子が元カノだった - Mamahaha no Tsurego ga Motokano datta\継母の連れ子が元カノだった - Mamahaha no Tsurego ga Motokano datta.epub':
+                            pass
+                        else:
+                            zipf.write(file_path, os.path.relpath(file_path, folder_path))
+                            print(f'Added {file_path} to {zip_file_path}')
+                        
+
+        # Specify the folder path and zip file path
+        folder_path = f'{dir_of_file}/{author}/{title.text}'
+        zip_file_path = f'{dir_of_file}/{author}/{title.text}/{title.text}.epub'
+
+        # Call the function to add the folder to the zip file
+        add_folder_to_zip(folder_path, zip_file_path)
             
 
     else:
@@ -249,5 +374,5 @@ filename2 = extract_epub(filename)
 print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
-main(filename,opf_location,filename)
-pause = input('pause')
+main(filename,opf_location,filename,True)
+#pause = input('pause')
