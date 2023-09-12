@@ -12,7 +12,8 @@ but it kinda works so that's cool
 
 1. Download the script
 2. Install the requirements
-3. Run the script
+3. Put your client ID into the .env file
+4. Run the script
 
 ## Requirements
 
@@ -29,6 +30,7 @@ and im below the skill level to do that
 and ebookmeta cant add covers or descriptions
 
 so i made this
+
 
 ## Known issues
 
