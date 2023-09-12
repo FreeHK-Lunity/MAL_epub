@@ -174,7 +174,10 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         with open('data.json',encoding='utf-8') as json_file:
             json_file = json.load(json_file)
         title.strip('\n')
+        title_exists = False
         for item in json_file['data']:
+            if title_exists == True:
+                break
             '''            
             if '\n' in title:
             title = title.replace('\n', '')
@@ -196,6 +199,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                     print(f'{title} exists in MAL!!')
                     print(f'Found {title} in Stage 2')
                     get_the_id = item['node']['id']
+                    print(get_the_id)
                     break
                 else:
                     try:
@@ -207,22 +211,25 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                         print(f'{title} exists in MAL!!')
                         print(f'Found {title} in Stage 3')
                         get_the_id = item['node']['id']
+                        print(get_the_id)
                         break
                     else:
                         string1 = title
                         string2 = item['node']['title']
                         title_exists = False
                         l_dist = levenshtein_distance(string1, string2)
-                        if l_dist <= 60:
+                        print(l_dist)
+                        if l_dist >= 60:
                             print(f'{title} exists in MAL!!')
                             print(f'Found {title} in Stage 4')
                             get_the_id = item['node']['id']
                             title_exists = True
-                            break
+                            print(get_the_id)
+                            
                         else:
                             title_exists = False
                             print(f'you`re out of luck m8, {title} does not exist in MAL :(')
-                            break
+                            
         if title_exists == True:
             url = f"https://api.myanimelist.net/v2/manga/{get_the_id}"
             headers = {
