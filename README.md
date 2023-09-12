@@ -31,9 +31,12 @@ and ebookmeta cant add covers or descriptions
 
 so i made this
 
+oh and also i have thought of making a calibre plugin but i dont know how to do that
 
 ## Known issues
 
 - Sometimes the script will use the first author it finds, which is usually correct one but sometimes it isn't
 
 ## uh thanks for reading to the end i guess
+
+
