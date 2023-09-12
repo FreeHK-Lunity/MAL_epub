@@ -152,7 +152,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
     print(title)
     title = sanitize_filename(title)
     print(title)
-    pause()
+    #pause()
     url = "https://api.myanimelist.net/v2/manga"
     headers = {
         "X-MAL-CLIENT-ID": f"{client_id}"
@@ -278,9 +278,9 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
             dir_of_file = get_orig_filename(filename)
             print(title)
             try:
-                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".:")}/OEBPS/content.opf')
+                tree = ET.parse(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/OEBPS/content.opf')
             except:
-                tree = ET.parse(f'{dir_of_file}/{author}/{title.strip(".:")}/EPUB/content.opf')
+                tree = ET.parse(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/EPUB/content.opf')
 
             root = tree.getroot()
             declaration = ET.Element('xml', version='1.0', encoding='utf-8')
@@ -365,9 +365,9 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
 
                 # Insert the XML declaration at the beginning of the root element
             try:    
-                tree.write(f'{dir_of_file}/{creator.text}/{title.strip(".:")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
+                tree.write(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
             except:
-                tree.write(f'{dir_of_file}/{creator.text}/{title.strip(".:")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
+                tree.write(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
 
         def add_folder_to_zip(folder_path, zip_file_path):
             if os.path.exists(zip_file_path):
@@ -385,8 +385,8 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                         
 
         # Specify the folder path and zip file path
-        folder_path = f'{dir_of_file}/{creator.text}/{title}'
-        zip_file_path = f'{dir_of_file}/{creator.text}/{title}/{title}.epub'
+        folder_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}'
+        zip_file_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}/{title}.epub'
 
         # Call the function to add the folder to the zip file
         add_folder_to_zip(folder_path, zip_file_path)
