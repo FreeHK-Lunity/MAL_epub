@@ -219,7 +219,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                         title_exists = False
                         l_dist = levenshtein_distance(string1, string2)
                         print(l_dist)
-                        if l_dist >= 60:
+                        if l_dist >= 45:
                             print(f'{title} exists in MAL!!')
                             print(f'Found {title} in Stage 4')
                             get_the_id = item['node']['id']
@@ -372,16 +372,21 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         def add_folder_to_zip(folder_path, zip_file_path):
             if os.path.exists(zip_file_path):
                 os.remove(zip_file_path)
-
-            with zipfile.ZipFile(zip_file_path, 'x', zipfile.ZIP_DEFLATED) as zipf:
-                for root, _, files in os.walk(folder_path):
-                    for file in files:
-                        file_path = os.path.join(root, file)
-                        if file_path == 'D:/users/user/Documents/Mangas/Mamahaha no Tsurego ga Moto Kanodatta/Kyousuke Kamishiro/継母の連れ子が元カノだった - Mamahaha no Tsurego ga Motokano datta\継母の連れ子が元カノだった - Mamahaha no Tsurego ga Motokano datta.epub':
-                            pass
-                        else:
-                            zipf.write(file_path, os.path.relpath(file_path, folder_path))
-                            print(f'Added {file_path} to {zip_file_path}')
+            if os.path.supports_unicode_filenames:
+                try:
+                    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                        for root, _, files in os.walk(folder_path):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                if file_path == 'D:/users/user/Documents/Mangas/Mamahaha no Tsurego ga Moto Kanodatta/Kyousuke Kamishiro/継母の連れ子が元カノだった - Mamahaha no Tsurego ga Motokano datta\継母の連れ子が元カノだった - Mamahaha no Tsurego ga Motokano datta.epub':
+                                    pass
+                                else:
+                                    zipf.write(file_path, os.path.relpath(file_path, folder_path))
+                                    print(f'Added {file_path} to {zip_file_path}')
+                except FileNotFoundError:
+                    print("You may not have enabled long path support in Windows. Please enable it and try again.")
+                else:
+                    print(f'Ran without errors. Added {folder_path} to {zip_file_path}')
                         
 
         # Specify the folder path and zip file path

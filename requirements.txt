@@ -1,2 +1,6 @@
-ebooklib=<0.18
-ebookmeta=<1.2.11
+ebooklib
+ebookmeta
+lxml
+python-dotenv
+scipy
+ebooklib
