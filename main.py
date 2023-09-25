@@ -380,6 +380,9 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
             i.clear()
             i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'cover.jpg','id': 'cover',  'media-type': 'image/jpeg'}))
             i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'toc.ncx','id': 'ncx',  'media-type': 'application/x-dtbncx+xml'}))
+        if i.tag == '{http://www.idpf.org/2007/opf}spine':
+            i.clear()
+            
             
 
 
@@ -423,11 +426,33 @@ def append_manifest(folder_path):
         item.set('media-type', 'image/png')  # Corrected media-type for PNG images
         manifest.append(item)
         # Append the item element to the manifest element
-            
+
         ET.indent(tree, '  ')
         tree.write(f'{folder_path}/OEBPS/content.opf')
         
+
+def edit_spine(folder_path,xd):
+    for i in os.listdir(f'{folder_path}/OEBPS/images'):
+        xd +=1
+        i.strip('.png')
+        tree = ET.parse(f'{folder_path}/OEBPS/content.opf')
+        root = tree.getroot()
+        spine = root.find('{http://www.idpf.org/2007/opf}spine')
+        spine.set('page-progression-direction', 'rtl')
+        itemref = ET.Element('itemref')
+        itemref.set('idref', f'page_{i}')
+        itemref.set('linear', 'yes')
+        if xd == 1:
+            itemref.set('properties', 'page-spread-right')
+        elif xd == 2:
+            itemref.set('properties', 'page-spread-left')
+            xd = 0
+        spine.append(itemref)
+        ET.indent(tree, '  ')
+        tree.write(f'{folder_path}/OEBPS/content.opf')
+
         
+
 
 
 def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_height):
@@ -704,6 +729,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
     literally_write_everything_to_xhtml(folder_path,width,height)
     write_a_css_file(folder_path)
     append_manifest(folder_path)
+    edit_spine(folder_path,0)
 
     
     # Call the function to add the folder to the zip file
