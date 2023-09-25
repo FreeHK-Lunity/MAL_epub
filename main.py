@@ -208,15 +208,464 @@ def check_MAL_existance(reque,title):
 
 
 
+def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_of_file,author):
+    for i in root:
+        if i.tag == "{http://www.idpf.org/2007/opf}metadata":
+            i.clear()
+            # Create new child elements
+            title = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+            title.text = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
+            i.append(title)
+            
+            language = ET.Element('{http://purl.org/dc/elements/1.1/}language')
+            language.text = 'en'
+            i.append(language)
+            
+            identifier = ET.Element('{http://purl.org/dc/elements/1.1/}identifier')
+            identifier.set('id', f'{future_id}')
+            identifier.set('{http://www.idpf.org/2007/opf}scheme', 'UUID')
+            identifier.text = f'{future_id}'
+            i.append(identifier)
+            
 
 
+            if bool(json_file['serialization']) == False:
+                pass
+            else:
+                for e in json_file['serialization']:
+                    publisher = ET.Element('{http://purl.org/dc/elements/1.1/}publisher')
+                    publisher.text = f'{e["node"]["name"]}'
+                    i.append(publisher)
+                    
+            if bool(json_file["alternative_titles"]['synonyms']) == False:
+                pass
+            else:
+                alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+                alternative_titles.text = f'{json_file["alternative_titles"]["synonyms"]}'
+                i.append(alternative_titles)
+                
+
+
+            alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+            alternative_titles.text = f'{json_file["alternative_titles"]["en"]}'
+            i.append(alternative_titles)
+            
+            alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
+            alternative_titles.text = f'{json_file["alternative_titles"]["ja"]}'
+            i.append(alternative_titles)
+            
+            for e in json_file['genres']:
+                subject = ET.Element('{http://purl.org/dc/elements/1.1/}subject')
+                subject.text = f'{e["name"]}'
+                i.append(subject)
+                
+            for e in json_file['authors']:
+                if e['role'] == 'Story & Art' or e['role'] == 'Story':
+                    creator = ET.Element('{http://purl.org/dc/elements/1.1/}creator')
+                    creator.set('{http://www.idpf.org/2007/opf}role', 'aut')
+                    creator.set('{http://www.idpf.org/2007/opf}file-as', f'{e["node"]["last_name"]}, {e["node"]["first_name"]}')
+                    creator.text = f'{e["node"]["first_name"]} {e["node"]["last_name"]}'
+                    i.append(creator)
+                    
+            description = ET.Element('{http://purl.org/dc/elements/1.1/}description')
+            description.text = f'{json_file["synopsis"]}'
+            i.append(description)
+            
+            date = ET.Element('{http://purl.org/dc/elements/1.1/}date')
+            date.text = f'{json_file["start_date"]}'
+            i.append(date)
+            
+            #<meta name="cover" content="cover"/>
+            cover = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            cover.set('name', 'cover')
+            cover.set('content', 'cover')
+            i.append(cover)
+            
+            '''
+            <meta name="fixed-layout" content="true"/>
+            <meta name="original-resolution" content="1264x1680"/>
+            <meta name="book-type" content="comic"/>
+            <meta name="primary-writing-mode" content="horizontal-rl"/>
+            <meta name="zero-gutter" content="true"/>
+            <meta name="zero-margin" content="true"/>
+            <meta name="ke-border-color" content="#FFFFFF"/>
+            <meta name="ke-border-width" content="0"/>
+            <meta property="rendition:spread">landscape</meta>
+            <meta property="rendition:layout">pre-paginated</meta>
+            <meta name="orientation-lock" content="none"/>
+            <meta name="region-mag" content="true"/>
+            
+            '''
+            book_type = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            book_type.set('name', 'book-type')
+            book_type.set('content', 'comic')
+            i.append(book_type)
+
+            primary_writing_mode = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            primary_writing_mode.set('name', 'primary-writing-mode')
+            primary_writing_mode.set('content', 'horizontal-rl')
+            i.append(primary_writing_mode)
+
+            zero_gutter = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            zero_gutter.set('name', 'zero-gutter')
+            zero_gutter.set('content', 'true')
+            i.append(zero_gutter)
+
+            zero_margin = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            zero_margin.set('name', 'zero-margin')
+            zero_margin.set('content', 'true')
+            i.append(zero_margin)
+
+            ke_border_color = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            ke_border_color.set('name', 'ke-border-color')
+            ke_border_color.set('content', '#FFFFFF')
+            i.append(ke_border_color)
+
+            ke_border_width = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            ke_border_width.set('name', 'ke-border-width')
+            ke_border_width.set('content', '0')
+            i.append(ke_border_width)
+
+            rendition_spread = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            rendition_spread.set('property', 'rendition:spread')
+            rendition_spread.text = 'landscape'
+            i.append(rendition_spread)
+
+            rendition_layout = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            rendition_layout.set('property', 'rendition:layout')
+            rendition_layout.text = 'pre-paginated'
+            i.append(rendition_layout)
+
+            orientation_lock = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            orientation_lock.set('name', 'orientation-lock')
+            orientation_lock.set('content', 'none')
+            i.append(orientation_lock)
+
+            region_mag = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            region_mag.set('name', 'region-mag')
+            region_mag.set('content', 'true')
+            i.append(region_mag)
+
+            fixed_layout = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            fixed_layout.set('name', 'fixed-layout')
+            fixed_layout.set('content', 'true')
+            i.append(fixed_layout)
+
+            original_resolution = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            original_resolution.set('name', 'original-resolution')
+            img = Image.open(f'{dir_of_file}/{author}/{title.text}/OEBPS/images/0_000.png')
+            width, height = img.size
+            original_resolution.set('content', f'{width}x{height}')
+            i.append(original_resolution)
+
+
+
+
+            title.text.strip('.')
+            title = sanitize_filename(title.text)
+            filename = "cover.jpg" # Replace with your image name
+            response = requests.get(f'{json_file["main_picture"]["large"]}')
+            if response.status_code == 200: # Check if the request was successful
+                try:
+                    with open(f'{dir_of_file}/{author}/{title.strip(".:")}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
+                        f.write(response.content) # Write the content of the response to the file
+                except:
+                    with open(f'{dir_of_file}/{author}/{title.strip(".:")}/EPUB/{filename}', "wb") as f:
+                        f.write(response.content)
+
+                    
+            else:
+                print("cover could not be downloaded")
+        if i.tag == '{http://www.idpf.org/2007/opf}manifest':
+            i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'cover.jpg','id': 'cover',  'media-type': 'image/jpeg'}))
+
+
+        
+    ET.indent(tree, '  ')
+        # Insert the XML declaration at the beginning of the root element
+    try:    
+        tree.write(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
+    except:
+        tree.write(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
+
+#now write some gay xmls for the images
+
+'''
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+<title>kcc-0007-kcc-c</title>
+<link href="style.css" type="text/css" rel="stylesheet"/>
+<meta name="viewport" content="width=1120, height=1680"/>
+</head>
+<body style="">
+<div style="text-align:center;top:0.0%;">
+<img width="1120" height="1680" src="../Images/kcc-0007-kcc-c.jpg"/>
+</div>
+<div id="PV">
+<div id="PV-TL">
+<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-TL-P", "ordinal":2}'></a>
+</div>
+<div id="PV-TR">
+<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-TR-P", "ordinal":1}'></a>
+</div>
+<div id="PV-BL">
+<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-BL-P", "ordinal":4}'></a>
+</div>
+<div id="PV-BR">
+<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-BR-P", "ordinal":3}'></a>
+</div>
+</div>
+<div class="PV-P" id="PV-TL-P" style="">
+<img style="position:absolute;left:0;top:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
+</div>
+<div class="PV-P" id="PV-TR-P" style="">
+<img style="position:absolute;right:0;top:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
+</div>
+<div class="PV-P" id="PV-BL-P" style="">
+<img style="position:absolute;left:0;bottom:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
+</div>
+<div class="PV-P" id="PV-BR-P" style="">
+<img style="position:absolute;right:0;bottom:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
+</div>
+</body>
+</html>
+
+'''
+def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_height):
+    for i in os.listdir(f'{folder_path}/OEBPS/images'):
+        # I SWEAR THERE IS A BETTER WAY TO DO THIS
+        # I CANT FIGURE IT OUT SO ILL JUST DO IT THE DUMB WAY
+
+        root = ET.Element("root")
+
+        # Create the XML tree
+        tree = ET.ElementTree(root)
+
+        # Create the declaration element
+        declaration = ET.Comment('xml version="1.0" encoding="UTF-8"')
+        root.append(declaration)
+
+        html = ET.Element('html', xmlns='http://www.w3.org/1999/xhtml', xmlns_epub='http://www.idpf.org/2007/ops')
+        root.append(html)
+
+        head = ET.Element('head')
+        html.append(head)
+
+        title = ET.Element('title')
+        title.text = f'{i.strip(".png")}'
+        head.append(title)
+
+        link = ET.Element('link', href='style.css', type='text/css', rel='stylesheet')
+        head.append(link)
+
+        meta = ET.Element('meta', name='viewport', content=f'width={sanitary_width}, height={sanitary_height}')
+        head.append(meta)
+
+        body = ET.Element('body', style='')
+        html.append(body)
+
+        div = ET.Element('div', style=f'text-align:center;top:0.0%;')
+        body.append(div)
+
+        img = ET.Element('img', width=f'{sanitary_width}', height=f'{sanitary_height}', src=f'../Images/{i}')
+        div.append(img)
+        body.append(div)
+        div = ET.Element('div', id='PV')
+        div2 = ET.Element('div', id='PV-TL')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TL-P", "ordinal":2}')
+        div2.append(a)
+        div.append(div2)
+        div2 = ET.Element('div', id='PV-TR')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TR-P", "ordinal":1}')
+        div2.append(a)
+        div.append(div2)
+        div2 = ET.Element('div', id='PV-BL')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BL-P", "ordinal":4}')
+        div2.append(a)
+        div.append(div2)
+        div2 = ET.Element('div', id='PV-BR')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BR-P", "ordinal":3}')
+        div2.append(a)
+        div.append(div2)
+        body.append(div)
+        for e in range(1,5):
+            div = ET.Element('div', class_='PV-P', id=f'PV-TL-P', style='')
+            img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../Images/{i}', width=f'{sanitary_width}', height=f'{sanitary_height}')
+            div.append(img)
+            body.append(div)
+        #html.append(body)
+        #print(ET.tostring(root, encoding='utf-8', method='xml').decode())
+        #pause()
+        #tree = ET.ElementTree(root)
+        ET.indent(tree, '  ')
+        tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)
+
+
+
+
+#contents of css file
+'''
+@page {
+margin: 0;
+}
+body {
+display: block;
+margin: 0;
+padding: 0;
+}
+#PV {
+position: absolute;
+width: 100%;
+height: 100%;
+top: 0;
+left: 0;
+}
+#PV-T {
+top: 0;
+width: 100%;
+height: 50%;
+}
+#PV-B {
+bottom: 0;
+width: 100%;
+height: 50%;
+}
+#PV-L {
+left: 0;
+width: 49.5%;
+height: 100%;
+float: left;
+}
+#PV-R {
+right: 0;
+width: 49.5%;
+height: 100%;
+float: right;
+}
+#PV-TL {
+top: 0;
+left: 0;
+width: 49.5%;
+height: 50%;
+float: left;
+}
+#PV-TR {
+top: 0;
+right: 0;
+width: 49.5%;
+height: 50%;
+float: right;
+}
+#PV-BL {
+bottom: 0;
+left: 0;
+width: 49.5%;
+height: 50%;
+float: left;
+}
+#PV-BR {
+bottom: 0;
+right: 0;
+width: 49.5%;
+height: 50%;
+float: right;
+}
+.PV-P {
+width: 100%;
+height: 100%;
+top: 0;
+position: absolute;
+display: none;
+}
+'''
+#github copilot make it into a real css file for me thanks
+def write_a_css_file(folder_path):
+    file = open(f'{folder_path}/OEBPS/xhtml/style.css', 'w', encoding='utf-8')
+    
+    file.write('''@page {
+margin: 0;
+}
+body {
+display: block;
+margin: 0;
+padding: 0;
+}
+#PV {
+position: absolute;
+width: 100%;
+height: 100%;
+top: 0;
+left: 0;
+}
+#PV-T {
+top: 0;
+width: 100%;
+height: 50%;
+}
+#PV-B {
+bottom: 0;
+width: 100%;
+height: 50%;
+}
+#PV-L {
+left: 0;
+width: 49.5%;
+height: 100%;
+float: left;
+}
+#PV-R {
+right: 0;
+width: 49.5%;
+height: 100%;
+float: right;
+}
+#PV-TL {
+top: 0;
+left: 0;
+width: 49.5%;
+height: 50%;
+float: left;
+}
+#PV-TR {
+top: 0;
+right: 0;
+width: 49.5%;
+height: 50%;
+float: right;
+}
+#PV-BL {
+bottom: 0;
+left: 0;
+width: 49.5%;
+height: 50%;
+float: left;
+}
+#PV-BR {
+bottom: 0;
+right: 0;
+width: 49.5%;
+height: 50%;
+float: right;
+}
+.PV-P {
+width: 100%;
+height: 100%;
+top: 0;
+position: absolute;
+display: none;
+}
+''')
+    file.close()
+#i hope this works
 
 def main(e_book_path,opf_location,filename,make_a_new_folder):
     def get_orig_filename(filename):
         directory, filename = os.path.split(filename)
         # Remove the file extension
         directory_without_extension = os.path.splitext(directory)[0]
-        return directory_without_extension
+        return directory_without_extension # e.g D:\users\user\Documents\Mangas\Maou-sama to Kekkon shitai | since this location is derived from the original epub file path 
     title = get_opf_title(opf_location)
     print(title)
     #
@@ -294,186 +743,10 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         root = tree.getroot()
         declaration = ET.Element('xml', version='1.0', encoding='utf-8')
         root.insert(0, declaration)
-
+        literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_of_file,author)
 
         
-        for i in root:
-            if i.tag == "{http://www.idpf.org/2007/opf}metadata":
-                i.clear()
-                # Create new child elements
-                title = ET.Element('{http://purl.org/dc/elements/1.1/}title')
-                title.text = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
-                i.append(title)
-                
-                language = ET.Element('{http://purl.org/dc/elements/1.1/}language')
-                language.text = 'en'
-                i.append(language)
-                
-                identifier = ET.Element('{http://purl.org/dc/elements/1.1/}identifier')
-                identifier.set('id', f'{future_id}')
-                identifier.set('{http://www.idpf.org/2007/opf}scheme', 'UUID')
-                identifier.text = f'{future_id}'
-                i.append(identifier)
-                
 
-
-                if bool(json_file['serialization']) == False:
-                    pass
-                else:
-                    for e in json_file['serialization']:
-                        publisher = ET.Element('{http://purl.org/dc/elements/1.1/}publisher')
-                        publisher.text = f'{e["node"]["name"]}'
-                        i.append(publisher)
-                        
-                if bool(json_file["alternative_titles"]['synonyms']) == False:
-                    pass
-                else:
-                    alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
-                    alternative_titles.text = f'{json_file["alternative_titles"]["synonyms"]}'
-                    i.append(alternative_titles)
-                    
-
-
-                alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
-                alternative_titles.text = f'{json_file["alternative_titles"]["en"]}'
-                i.append(alternative_titles)
-                
-                alternative_titles = ET.Element('{http://purl.org/dc/elements/1.1/}title')
-                alternative_titles.text = f'{json_file["alternative_titles"]["ja"]}'
-                i.append(alternative_titles)
-                
-                for e in json_file['genres']:
-                    subject = ET.Element('{http://purl.org/dc/elements/1.1/}subject')
-                    subject.text = f'{e["name"]}'
-                    i.append(subject)
-                    
-                for e in json_file['authors']:
-                    if e['role'] == 'Story & Art' or e['role'] == 'Story':
-                        creator = ET.Element('{http://purl.org/dc/elements/1.1/}creator')
-                        creator.set('{http://www.idpf.org/2007/opf}role', 'aut')
-                        creator.set('{http://www.idpf.org/2007/opf}file-as', f'{e["node"]["last_name"]}, {e["node"]["first_name"]}')
-                        creator.text = f'{e["node"]["first_name"]} {e["node"]["last_name"]}'
-                        i.append(creator)
-                        
-                description = ET.Element('{http://purl.org/dc/elements/1.1/}description')
-                description.text = f'{json_file["synopsis"]}'
-                i.append(description)
-                
-                date = ET.Element('{http://purl.org/dc/elements/1.1/}date')
-                date.text = f'{json_file["start_date"]}'
-                i.append(date)
-                
-                #<meta name="cover" content="cover"/>
-                cover = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                cover.set('name', 'cover')
-                cover.set('content', 'cover')
-                i.append(cover)
-                
-                '''
-                <meta name="fixed-layout" content="true"/>
-                <meta name="original-resolution" content="1264x1680"/>
-                <meta name="book-type" content="comic"/>
-                <meta name="primary-writing-mode" content="horizontal-rl"/>
-                <meta name="zero-gutter" content="true"/>
-                <meta name="zero-margin" content="true"/>
-                <meta name="ke-border-color" content="#FFFFFF"/>
-                <meta name="ke-border-width" content="0"/>
-                <meta property="rendition:spread">landscape</meta>
-                <meta property="rendition:layout">pre-paginated</meta>
-                <meta name="orientation-lock" content="none"/>
-                <meta name="region-mag" content="true"/>
-                
-                '''
-                book_type = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                book_type.set('name', 'book-type')
-                book_type.set('content', 'comic')
-                i.append(book_type)
-
-                primary_writing_mode = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                primary_writing_mode.set('name', 'primary-writing-mode')
-                primary_writing_mode.set('content', 'horizontal-rl')
-                i.append(primary_writing_mode)
-
-                zero_gutter = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                zero_gutter.set('name', 'zero-gutter')
-                zero_gutter.set('content', 'true')
-                i.append(zero_gutter)
-
-                zero_margin = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                zero_margin.set('name', 'zero-margin')
-                zero_margin.set('content', 'true')
-                i.append(zero_margin)
-
-                ke_border_color = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                ke_border_color.set('name', 'ke-border-color')
-                ke_border_color.set('content', '#FFFFFF')
-                i.append(ke_border_color)
-
-                ke_border_width = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                ke_border_width.set('name', 'ke-border-width')
-                ke_border_width.set('content', '0')
-                i.append(ke_border_width)
-
-                rendition_spread = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                rendition_spread.set('property', 'rendition:spread')
-                rendition_spread.text = 'landscape'
-                i.append(rendition_spread)
-
-                rendition_layout = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                rendition_layout.set('property', 'rendition:layout')
-                rendition_layout.text = 'pre-paginated'
-                i.append(rendition_layout)
-
-                orientation_lock = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                orientation_lock.set('name', 'orientation-lock')
-                orientation_lock.set('content', 'none')
-                i.append(orientation_lock)
-
-                region_mag = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                region_mag.set('name', 'region-mag')
-                region_mag.set('content', 'true')
-                i.append(region_mag)
-
-                fixed_layout = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                fixed_layout.set('name', 'fixed-layout')
-                fixed_layout.set('content', 'true')
-                i.append(fixed_layout)
-
-                original_resolution = ET.Element('{http://www.idpf.org/2007/opf}meta')
-                original_resolution.set('name', 'original-resolution')
-                img = Image.open(f'{dir_of_file}/{author}/{title.text}/OEBPS/images/0_000.png')
-                width, height = img.size
-                original_resolution.set('content', f'{width}x{height}')
-                i.append(original_resolution)
-
-
-
-
-                title.text.strip('.')
-                title = sanitize_filename(title.text)
-                filename = "cover.jpg" # Replace with your image name
-                response = requests.get(f'{json_file["main_picture"]["large"]}')
-                if response.status_code == 200: # Check if the request was successful
-                    try:
-                        with open(f'{dir_of_file}/{author}/{title.strip(".:")}/OEBPS/{filename}', "wb") as f: # Open a file in write-binary mode
-                            f.write(response.content) # Write the content of the response to the file
-                    except:
-                        with open(f'{dir_of_file}/{author}/{title.strip(".:")}/EPUB/{filename}', "wb") as f:
-                            f.write(response.content)
-
-                        
-                else:
-                    print("cover could not be downloaded")
-            if i.tag == '{http://www.idpf.org/2007/opf}manifest':
-                i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'cover.jpg','id': 'cover',  'media-type': 'image/jpeg'}))
-
-            
-        ET.indent(tree, '  ')
-            # Insert the XML declaration at the beginning of the root element
-        try:    
-            tree.write(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/OEBPS/content.opf', encoding='utf-8', xml_declaration=True)
-        except:
-            tree.write(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/EPUB/content.opf', encoding='utf-8', xml_declaration=True)
 
     def add_folder_to_zip(folder_path, zip_file_path):
         if os.path.exists(zip_file_path):
@@ -496,9 +769,17 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
                         
 
         # Specify the folder path and zip file path
-    folder_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}'
-    zip_file_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}/{title}.epub'
+    folder_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}' #e.g D:\users\user\Documents\Mangas\Maou-sama to Kekkon shitai\Tanuma Ikeuchi\魔王様と結婚したい - Maou-sama to Kekkon shitai
+    #                                                                                                                                          {                          dir_of_file                  }\{   author   }\{                  title                     }
+    zip_file_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}/{title}.epub'#e.g D:\users\user\Documents\Mangas\Maou-sama to Kekkon shitai\Tanuma Ikeuchi\魔王様と結婚したい - Maou-sama to Kekkon shitai\魔王様と結婚したい - Maou-sama to Kekkon shitai.epub
+    #                                                                                                                                                        {                          dir_of_file                  }\{   author   }\{                  title                     }\{                   title                   }.epub
+    img = Image.open(f'{dir_of_file}/{author}/{title}/OEBPS/images/0_000.png')
+    width, height = img.size
+    literally_write_everything_to_xhtml(folder_path,width,height)
+    write_a_css_file(folder_path)
 
+
+    
     # Call the function to add the folder to the zip file
     add_folder_to_zip(folder_path, zip_file_path)
             
