@@ -380,8 +380,10 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
             i.clear()
             i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'cover.jpg','id': 'cover',  'media-type': 'image/jpeg'}))
             i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'toc.ncx','id': 'ncx',  'media-type': 'application/x-dtbncx+xml'}))
+            pass
         if i.tag == '{http://www.idpf.org/2007/opf}spine':
             i.clear()
+            pass
             
             
 
@@ -460,17 +462,18 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
         # I SWEAR THERE IS A BETTER WAY TO DO THIS
         # I CANT FIGURE IT OUT SO ILL JUST DO IT THE DUMB WAY
 
-        root = ET.Element("root")
+        
 
         # Create the XML tree
-        tree = ET.ElementTree(root)
+        tree = ET.ElementTree()
+
 
         # Create the declaration element
         declaration = ET.Comment('xml version="1.0" encoding="UTF-8"')
-        root.append(declaration)
+        tree._setroot(declaration)
 
         html = ET.Element('html', xmlns='http://www.w3.org/1999/xhtml', xmlns_epub='http://www.idpf.org/2007/ops')
-        root.append(html)
+        tree._setroot(html)
 
         head = ET.Element('head')
         html.append(head)
@@ -488,13 +491,11 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
         body = ET.Element('body', style='')
         html.append(body)
 
-        div = ET.Element('div', style=f'text-align:center;top:0.0%;')
-        body.append(div)
-
         img = ET.Element('img', width=f'{sanitary_width}', height=f'{sanitary_height}', src=f'../Images/{i}')
+        div = ET.Element('div', style=f'text-align:center;top:0.0%;')
         div.append(img)
         body.append(div)
-        div = ET.Element('div', id='PV')
+        div = ET.Element('div', id='PV')    
         div2 = ET.Element('div', id='PV-TL')
         a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TL-P", "ordinal":2}')
         div2.append(a)
@@ -512,9 +513,20 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
         div2.append(a)
         div.append(div2)
         body.append(div)
-        for e in range(1,5):
-            div = ET.Element('div', class_='PV-P', id=f'PV-TL-P', style='')
-            img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../Images/{i}', width=f'{sanitary_width}', height=f'{sanitary_height}')
+        list_of_ids = ['PV-TL-P','PV-TR-P','PV-BL-P','PV-BR-P']
+        xd = 0
+        for j in list_of_ids:
+            xd += 1
+            div = ET.Element('div', class_='PV-P', id=f'{j}', style='')
+            if xd == 1:
+                img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+            elif xd == 2:
+                img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+            elif xd == 3:
+                img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+            elif xd == 4:
+                img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+                xd = 0
             div.append(img)
             body.append(div)
         #html.append(body)
@@ -523,6 +535,16 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
         #tree = ET.ElementTree(root)
         ET.indent(tree, '  ')
         tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)
+        change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'r', encoding='utf-8')
+        change_classunderscore_to_class = change_classunderscore_to_class.read()
+        change_classunderscore_to_class2 = change_classunderscore_to_class.replace('class_', 'class')
+        change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'w', encoding='utf-8')
+        change_classunderscore_to_class.write(change_classunderscore_to_class2)
+        change_classunderscore_to_class.close()
+
+        
+
+
 
 
 
