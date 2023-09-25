@@ -391,46 +391,7 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
 #now write some gay xmls for the images
 
 '''
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-<title>kcc-0007-kcc-c</title>
-<link href="style.css" type="text/css" rel="stylesheet"/>
-<meta name="viewport" content="width=1120, height=1680"/>
-</head>
-<body style="">
-<div style="text-align:center;top:0.0%;">
-<img width="1120" height="1680" src="../Images/kcc-0007-kcc-c.jpg"/>
-</div>
-<div id="PV">
-<div id="PV-TL">
-<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-TL-P", "ordinal":2}'></a>
-</div>
-<div id="PV-TR">
-<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-TR-P", "ordinal":1}'></a>
-</div>
-<div id="PV-BL">
-<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-BL-P", "ordinal":4}'></a>
-</div>
-<div id="PV-BR">
-<a style="display:inline-block;width:100%;height:100%;" class="app-amzn-magnify" data-app-amzn-magnify='{"targetId":"PV-BR-P", "ordinal":3}'></a>
-</div>
-</div>
-<div class="PV-P" id="PV-TL-P" style="">
-<img style="position:absolute;left:0;top:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
-</div>
-<div class="PV-P" id="PV-TR-P" style="">
-<img style="position:absolute;right:0;top:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
-</div>
-<div class="PV-P" id="PV-BL-P" style="">
-<img style="position:absolute;left:0;bottom:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
-</div>
-<div class="PV-P" id="PV-BR-P" style="">
-<img style="position:absolute;right:0;bottom:0;" src="../Images/kcc-0007-kcc-c.jpg" width="1680" height="2520"/>
-</div>
-</body>
-</html>
+
 
 '''
 def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_height):
@@ -507,78 +468,7 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
 
 #contents of css file
 '''
-@page {
-margin: 0;
-}
-body {
-display: block;
-margin: 0;
-padding: 0;
-}
-#PV {
-position: absolute;
-width: 100%;
-height: 100%;
-top: 0;
-left: 0;
-}
-#PV-T {
-top: 0;
-width: 100%;
-height: 50%;
-}
-#PV-B {
-bottom: 0;
-width: 100%;
-height: 50%;
-}
-#PV-L {
-left: 0;
-width: 49.5%;
-height: 100%;
-float: left;
-}
-#PV-R {
-right: 0;
-width: 49.5%;
-height: 100%;
-float: right;
-}
-#PV-TL {
-top: 0;
-left: 0;
-width: 49.5%;
-height: 50%;
-float: left;
-}
-#PV-TR {
-top: 0;
-right: 0;
-width: 49.5%;
-height: 50%;
-float: right;
-}
-#PV-BL {
-bottom: 0;
-left: 0;
-width: 49.5%;
-height: 50%;
-float: left;
-}
-#PV-BR {
-bottom: 0;
-right: 0;
-width: 49.5%;
-height: 50%;
-float: right;
-}
-.PV-P {
-width: 100%;
-height: 100%;
-top: 0;
-position: absolute;
-display: none;
-}
+
 '''
 #github copilot make it into a real css file for me thanks
 def write_a_css_file(folder_path):
