@@ -442,7 +442,7 @@ def edit_spine(folder_path,xd):
         spine = root.find('{http://www.idpf.org/2007/opf}spine')
         spine.set('page-progression-direction', 'rtl')
         itemref = ET.Element('itemref')
-        itemref.set('idref', f'page_{i}')
+        itemref.set('idref', f'page_{i.strip(".png")}')
         itemref.set('linear', 'yes')
         if xd == 1:
             itemref.set('properties', 'page-spread-right')
