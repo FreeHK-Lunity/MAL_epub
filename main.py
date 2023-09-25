@@ -491,7 +491,7 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
         body = ET.Element('body', style='')
         html.append(body)
 
-        img = ET.Element('img', width=f'{sanitary_width}', height=f'{sanitary_height}', src=f'../Images/{i}')
+        img = ET.Element('img', width=f'{sanitary_width}', height=f'{sanitary_height}', src=f'../images/{i}')
         div = ET.Element('div', style=f'text-align:center;top:0.0%;')
         div.append(img)
         body.append(div)
@@ -519,13 +519,13 @@ def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_heig
             xd += 1
             div = ET.Element('div', class_='PV-P', id=f'{j}', style='')
             if xd == 1:
-                img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+                img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
             elif xd == 2:
-                img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+                img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
             elif xd == 3:
-                img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+                img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
             elif xd == 4:
-                img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../Images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
+                img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
                 xd = 0
             div.append(img)
             body.append(div)
