@@ -377,7 +377,10 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
             else:
                 print("cover could not be downloaded")
         if i.tag == '{http://www.idpf.org/2007/opf}manifest':
+            i.clear()
             i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'cover.jpg','id': 'cover',  'media-type': 'image/jpeg'}))
+            i.append(ET.Element('{http://www.idpf.org/2007/opf}item', attrib={'href': 'toc.ncx','id': 'ncx',  'media-type': 'application/x-dtbncx+xml'}))
+            
 
 
         
@@ -391,9 +394,42 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
 #now write some gay xmls for the images
 
 '''
-
-
+<item id="cover" href="Images/cover.jpg" media-type="image/jpeg" properties="cover-image"/>
+<item id="page_Images_kcc-0000-kcc" href="Text/kcc-0000-kcc.xhtml" media-type="application/xhtml+xml"/>
+<item id="img_Images_kcc-0000-kcc" href="Images/kcc-0000-kcc.jpg" media-type="image/jpeg"/>
+<item id="page_Images_kcc-0001-kcc" href="Text/kcc-0001-kcc.xhtml" media-type="application/xhtml+xml"/>
+<item id="img_Images_kcc-0001-kcc" href="Images/kcc-0001-kcc.jpg" media-type="image/jpeg"/>
+<item id="page_Images_kcc-0002-kcc" href="Text/kcc-0002-kcc.xhtml" media-type="application/xhtml+xml"/>
+<item id="img_Images_kcc-0002-kcc" href="Images/kcc-0002-kcc.jpg" media-type="image/jpeg"/>
 '''
+
+def append_manifest(folder_path):
+    for i in os.listdir(f'{folder_path}/OEBPS/images'):
+        i = i.strip('.png')
+        tree = ET.parse(f'{folder_path}/OEBPS/content.opf')
+        root = tree.getroot()
+        manifest = root.find('{http://www.idpf.org/2007/opf}manifest')
+        item = ET.Element('item')
+        
+        item.set('id', f'page_{i}')
+        item.set('href', f'xhtml/{i}.xhtml')
+        item.set('media-type', 'application/xhtml+xml')
+        manifest.append(item)
+        
+        item = ET.Element('item')  # Create a new item element
+        
+        item.set('id', f'img_{i}')
+        item.set('href', f'images/{i}.png')
+        item.set('media-type', 'image/png')  # Corrected media-type for PNG images
+        manifest.append(item)
+        # Append the item element to the manifest element
+            
+        ET.indent(tree, '  ')
+        tree.write(f'{folder_path}/OEBPS/content.opf')
+        
+        
+
+
 def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_height):
     for i in os.listdir(f'{folder_path}/OEBPS/images'):
         # I SWEAR THERE IS A BETTER WAY TO DO THIS
@@ -667,7 +703,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
     width, height = img.size
     literally_write_everything_to_xhtml(folder_path,width,height)
     write_a_css_file(folder_path)
-
+    append_manifest(folder_path)
 
     
     # Call the function to add the folder to the zip file
