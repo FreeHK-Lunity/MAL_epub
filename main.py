@@ -351,12 +351,12 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
             fixed_layout.set('content', 'true')
             i.append(fixed_layout)
 
-            original_resolution = ET.Element('{http://www.idpf.org/2007/opf}meta')
+            '''            original_resolution = ET.Element('{http://www.idpf.org/2007/opf}meta')
             original_resolution.set('name', 'original-resolution')
             img = Image.open(f'{dir_of_file}/{author}/{title.text}/OEBPS/images/0_000.png')
             width, height = img.size
             original_resolution.set('content', f'{width}x{height}')
-            i.append(original_resolution)
+            i.append(original_resolution)'''
 
 
 
@@ -429,8 +429,16 @@ def append_manifest(folder_path):
         manifest.append(item)
         # Append the item element to the manifest element
 
+
         ET.indent(tree, '  ')
         tree.write(f'{folder_path}/OEBPS/content.opf')
+    item = ET.Element('{http://www.idpf.org/2007/opf}item')  # Create a new item element
+    item.set('id', 'css')
+    item.set('href', 'xhtml/style.css')
+    item.set('media-type', 'text/css')
+    manifest.append(item)
+    ET.indent(tree, '  ')
+    tree.write(f'{folder_path}/OEBPS/content.opf')
         
 
 def edit_spine(folder_path,xd):
