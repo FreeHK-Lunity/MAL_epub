@@ -414,14 +414,14 @@ def append_manifest(folder_path):
         tree = ET.parse(f'{folder_path}/OEBPS/content.opf')
         root = tree.getroot()
         manifest = root.find('{http://www.idpf.org/2007/opf}manifest')
-        item = ET.Element('item')
+        item = ET.Element('{http://www.idpf.org/2007/opf}item')
         
         item.set('id', f'page_{i}')
         item.set('href', f'xhtml/{i}.xhtml')
         item.set('media-type', 'application/xhtml+xml')
         manifest.append(item)
         
-        item = ET.Element('item')  # Create a new item element
+        item = ET.Element('{http://www.idpf.org/2007/opf}item')  # Create a new item element
         
         item.set('id', f'img_{i}')
         item.set('href', f'images/{i}.png')
@@ -441,7 +441,7 @@ def edit_spine(folder_path,xd):
         root = tree.getroot()
         spine = root.find('{http://www.idpf.org/2007/opf}spine')
         spine.set('page-progression-direction', 'rtl')
-        itemref = ET.Element('itemref')
+        itemref = ET.Element('{http://www.idpf.org/2007/opf}itemref')
         itemref.set('idref', f'page_{i.strip(".png")}')
         itemref.set('linear', 'yes')
         if xd == 1:
