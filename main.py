@@ -204,7 +204,7 @@ def check_MAL_existance(reque,title):
         if title_exists == True:
             return title_exists,get_the_id
         else:
-            return title_exists
+            return title_exists,title_exists
 
 
 
@@ -753,8 +753,10 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
     folder_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}' #e.g D:\users\user\Documents\Mangas\Maou-sama to Kekkon shitai\Tanuma Ikeuchi\魔王様と結婚したい - Maou-sama to Kekkon shitai
     #                                                                                                                                          {                          dir_of_file                  }\{   author   }\{                  title                     }
     zip_file_path = f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title}/{title}.epub'#e.g D:\users\user\Documents\Mangas\Maou-sama to Kekkon shitai\Tanuma Ikeuchi\魔王様と結婚したい - Maou-sama to Kekkon shitai\魔王様と結婚したい - Maou-sama to Kekkon shitai.epub
-    #                                                                                                                                                        {                          dir_of_file                  }\{   author   }\{                  title                     }\{                   title                   }.epub
-    img = Image.open(f'{dir_of_file}/{author}/{title}/OEBPS/images/0_000.png')
+    #
+    
+    os.listdir(f'{folder_path}/OEBPS/images')[0]
+    img = Image.open(f'{folder_path}/OEBPS/images/{os.listdir(f"{folder_path}/OEBPS/images")[0]}')
     width, height = img.size
     literally_write_everything_to_xhtml(folder_path,width,height)
     write_a_css_file(folder_path)
