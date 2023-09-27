@@ -813,7 +813,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder,ignore_MAL,manga_id
     add_folder_to_zip(folder_path, zip_file_path)
             
 
-    if reque.status_code == 400:
+    if reque.status_code != 200:
         print("Fatal Error:", reque.status_code)
 filename2 = extract_epub(filename)
 print(filename2)
