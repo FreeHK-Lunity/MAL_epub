@@ -410,7 +410,7 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
 
 def append_manifest(folder_path):
     for i in os.listdir(f'{folder_path}/OEBPS/images'):
-        i = i.strip('.png')
+        i = os.path.splitext(i)[0] # strip file extension
         tree = ET.parse(f'{folder_path}/OEBPS/content.opf')
         root = tree.getroot()
         manifest = root.find('{http://www.idpf.org/2007/opf}manifest')
@@ -426,6 +426,12 @@ def append_manifest(folder_path):
         item.set('id', f'img_{i}')
         item.set('href', f'images/{i}.png')
         item.set('media-type', 'image/png')  # Corrected media-type for PNG images
+        if os.path.exists(f'{folder_path}/OEBPS/images/{i}.jpeg'):
+            item.set('href', f'images/{i}.jpeg')
+            item.set('media-type', 'image/jpeg')
+        elif os.path.exists(f'{folder_path}/OEBPS/images/{i}.jpg'):
+            item.set('href', f'images/{i}.jpg')
+            item.set('media-type', 'image/jpeg')
         manifest.append(item)
         # Append the item element to the manifest element
 
@@ -546,20 +552,15 @@ def literally_write_everything_to_xhtml(folder_path):
         #tree = ET.ElementTree(root)
         ET.indent(tree, '  ')
 
-        if i.endswith('.jpg'):
-            tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".jpg")}.xhtml', encoding='utf-8', xml_declaration=True)
-            with open(f'{folder_path}/OEBPS/xhtml/{i.strip(".jpg")}.xhtml', 'r+', encoding='utf-8') as file:
-                content = file.read().replace('class_', 'class')
-                file.seek(0)
-                file.write(content)
-                file.truncate()
-        elif i.endswith('.png'):
-            tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)        
-            with open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'r+', encoding='utf-8') as file:
-                content = file.read().replace('class_', 'class')
-                file.seek(0)
-                file.write(content)
-                file.truncate()
+        for ext in ['.jpg', '.png', '.jpeg']:
+            if i.endswith(ext):
+                file_path = f'{folder_path}/OEBPS/xhtml/{i.strip(ext)}.xhtml'
+                tree.write(file_path, encoding='utf-8', xml_declaration=True)
+                with open(file_path, 'r+', encoding='utf-8') as file:
+                    content = file.read().replace('class_', 'class')
+                    file.seek(0)
+                    file.write(content)
+                    file.truncate()
 
         
 
@@ -668,6 +669,64 @@ def make_a_new_folder_func(json_file,filename):
     #copy everything from temp folder to new folder and delete the temp folder
     os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title.strip(".:")}" /s /e')
     os.system(f'rmdir /s /q "{dir_of_file}/temp"')
+
+
+# WIP 
+def edit_ncx(folder_path):
+    root = ET.fromstring(f'{folder_path}/OEBPS/toc.ncx')
+
+    # Get the maximum index value
+    max_index = 0
+    for nav_point in root.findall(".//navPoint"):
+        nav_point_id = nav_point.get("id")
+        index = int(nav_point_id.split("_")[-1])
+        max_index = max(max_index, index)
+
+    # Determine the starting index for new data
+    starting_index = max_index + 1
+
+    # Iterate over the navPoint elements
+    for nav_point in root.findall(".//navPoint"):
+        nav_point_id = nav_point.get("id")
+
+        # Update the id attribute if it starts with "TOC_0_"
+        if nav_point_id.startswith("TOC_0_"):
+            updated_id = nav_point_id.replace("TOC_0_", f"TOC_0_{starting_index}_")
+            nav_point.set("id", updated_id)
+
+        # Update the content src attribute if it starts with "xhtml/0_"
+        content_element = nav_point.find("content")
+        if content_element is not None:
+            content_src = content_element.get("src")
+            if content_src.startswith("xhtml/0_"):
+                updated_src = content_src.replace("xhtml/0_", f"xhtml/{starting_index}_")
+                content_element.set("src", updated_src)
+
+        # Update the text element if it starts with "Page "
+        text_element = nav_point.find("navLabel/text")
+        if text_element is not None:
+            text = text_element.text
+            if text.startswith("Page "):
+                updated_text = f"Page {starting_index}"
+                text_element.text = updated_text
+
+        # Increment the starting index for new data
+        starting_index += 1
+
+    # Get the modified XML code
+    modified_xml_code = ET.tostring(root, encoding="unicode")
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def main(e_book_path,opf_location,filename,make_a_new_folder,ignore_MAL,manga_id):
@@ -807,8 +866,6 @@ def main(e_book_path,opf_location,filename,make_a_new_folder,ignore_MAL,manga_id
     write_a_css_file(folder_path)
     append_manifest(folder_path)
     edit_spine(folder_path,0)
-
-    
     # Call the function to add the folder to the zip file
     add_folder_to_zip(folder_path, zip_file_path)
             
@@ -821,5 +878,5 @@ print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
 
-main(filename,opf_location,filename,True,True,123362)
+main(filename,opf_location,filename,True,False,117650)
 #pause = input('pause')
