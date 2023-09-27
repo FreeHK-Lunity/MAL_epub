@@ -190,7 +190,7 @@ def check_MAL_existance(reque,title):
                         title_exists = False
                         l_dist = levenshtein_distance(string1, string2)
                         print(l_dist)
-                        if l_dist >= 45:
+                        if l_dist >= 49:
                             print(f'{title} exists in MAL!!')
                             print(f'Found {title} in Stage 4')
                             get_the_id = item['node']['id']
@@ -465,90 +465,93 @@ def edit_spine(folder_path,xd):
 
 
 
-def literally_write_everything_to_xhtml(folder_path,sanitary_width,sanitary_height):
+def literally_write_everything_to_xhtml(folder_path):
     for i in os.listdir(f'{folder_path}/OEBPS/images'):
         # I SWEAR THERE IS A BETTER WAY TO DO THIS
         # I CANT FIGURE IT OUT SO ILL JUST DO IT THE DUMB WAY
-
+        if i.endswith(('.jpg', '.png')):
+            img_path = f'{folder_path}/OEBPS/images/{i}'
+            img = Image.open(img_path)
+            width, height = img.size
         
 
-        # Create the XML tree
-        tree = ET.ElementTree()
+            # Create the XML tree
+            tree = ET.ElementTree()
 
 
-        # Create the declaration element
-        declaration = ET.Comment('xml version="1.0" encoding="UTF-8"')
-        tree._setroot(declaration)
+            # Create the declaration element
+            declaration = ET.Comment('xml version="1.0" encoding="UTF-8"')
+            tree._setroot(declaration)
 
-        html = ET.Element('html', xmlns='http://www.w3.org/1999/xhtml', xmlns_epub='http://www.idpf.org/2007/ops')
-        tree._setroot(html)
+            html = ET.Element('html', xmlns='http://www.w3.org/1999/xhtml', xmlns_epub='http://www.idpf.org/2007/ops')
+            tree._setroot(html)
 
-        head = ET.Element('head')
-        html.append(head)
+            head = ET.Element('head')
+            html.append(head)
 
-        title = ET.Element('title')
-        title.text = f'{i.strip(".png")}'
-        head.append(title)
+            title = ET.Element('title')
+            title.text = f'{i.strip(".png")}'
+            head.append(title)
 
-        link = ET.Element('link', href='style.css', type='text/css', rel='stylesheet')
-        head.append(link)
+            link = ET.Element('link', href='style.css', type='text/css', rel='stylesheet')
+            head.append(link)
 
-        meta = ET.Element('meta', name='viewport', content=f'width={sanitary_width}, height={sanitary_height}')
-        head.append(meta)
+            meta = ET.Element('meta', name='viewport', content=f'width={width}, height={height}')
+            head.append(meta)
 
-        body = ET.Element('body', style='')
-        html.append(body)
+            body = ET.Element('body', style='')
+            html.append(body)
 
-        img = ET.Element('img', width=f'{sanitary_width}', height=f'{sanitary_height}', src=f'../images/{i}')
-        div = ET.Element('div', style=f'text-align:center;top:0.0%;')
-        div.append(img)
-        body.append(div)
-        div = ET.Element('div', id='PV')    
-        div2 = ET.Element('div', id='PV-TL')
-        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TL-P", "ordinal":2}')
-        div2.append(a)
-        div.append(div2)
-        div2 = ET.Element('div', id='PV-TR')
-        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TR-P", "ordinal":1}')
-        div2.append(a)
-        div.append(div2)
-        div2 = ET.Element('div', id='PV-BL')
-        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BL-P", "ordinal":4}')
-        div2.append(a)
-        div.append(div2)
-        div2 = ET.Element('div', id='PV-BR')
-        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BR-P", "ordinal":3}')
-        div2.append(a)
-        div.append(div2)
-        body.append(div)
-        list_of_ids = ['PV-TL-P','PV-TR-P','PV-BL-P','PV-BR-P']
-        xd = 0
-        for j in list_of_ids:
-            xd += 1
-            div = ET.Element('div', class_='PV-P', id=f'{j}', style='')
-            if xd == 1:
-                img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
-            elif xd == 2:
-                img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
-            elif xd == 3:
-                img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
-            elif xd == 4:
-                img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../images/{i}', width=f' {sanitary_width*(3/2)}', height=f'{sanitary_height*(3/2)}')
-                xd = 0
+            img = ET.Element('img', width=f'{width}', height=f'{height}', src=f'../images/{i}')
+            div = ET.Element('div', style=f'text-align:center;top:0.0%;')
             div.append(img)
             body.append(div)
-        #html.append(body)
-        #print(ET.tostring(root, encoding='utf-8', method='xml').decode())
-        #pause()
-        #tree = ET.ElementTree(root)
-        ET.indent(tree, '  ')
-        tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)
-        change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'r', encoding='utf-8')
-        change_classunderscore_to_class = change_classunderscore_to_class.read()
-        change_classunderscore_to_class2 = change_classunderscore_to_class.replace('class_', 'class')
-        change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'w', encoding='utf-8')
-        change_classunderscore_to_class.write(change_classunderscore_to_class2)
-        change_classunderscore_to_class.close()
+            div = ET.Element('div', id='PV')    
+            div2 = ET.Element('div', id='PV-TL')
+            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TL-P", "ordinal":2}')
+            div2.append(a)
+            div.append(div2)
+            div2 = ET.Element('div', id='PV-TR')
+            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TR-P", "ordinal":1}')
+            div2.append(a)
+            div.append(div2)
+            div2 = ET.Element('div', id='PV-BL')
+            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BL-P", "ordinal":4}')
+            div2.append(a)
+            div.append(div2)
+            div2 = ET.Element('div', id='PV-BR')
+            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BR-P", "ordinal":3}')
+            div2.append(a)
+            div.append(div2)
+            body.append(div)
+            list_of_ids = ['PV-TL-P','PV-TR-P','PV-BL-P','PV-BR-P']
+            xd = 0
+            for j in list_of_ids:
+                xd += 1
+                div = ET.Element('div', class_='PV-P', id=f'{j}', style='')
+                if xd == 1:
+                    img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+                elif xd == 2:
+                    img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+                elif xd == 3:
+                    img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+                elif xd == 4:
+                    img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+                    xd = 0
+                div.append(img)
+                body.append(div)
+            #html.append(body)
+            #print(ET.tostring(root, encoding='utf-8', method='xml').decode())
+            #pause()
+            #tree = ET.ElementTree(root)
+            ET.indent(tree, '  ')
+            tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)
+            change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'r', encoding='utf-8')
+            change_classunderscore_to_class = change_classunderscore_to_class.read()
+            change_classunderscore_to_class2 = change_classunderscore_to_class.replace('class_', 'class')
+            change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'w', encoding='utf-8')
+            change_classunderscore_to_class.write(change_classunderscore_to_class2)
+            change_classunderscore_to_class.close()
 
         
 
@@ -641,7 +644,25 @@ display: none;
     file.close()
 #i hope this works
 
-def main(e_book_path,opf_location,filename,make_a_new_folder):
+
+
+
+
+def make_a_new_folder_func(json_file,filename):
+    author = f'{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}'
+    title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
+    dir_of_file = filename
+    title = sanitize_filename(title)
+    if os.path.isdir(f'{dir_of_file}/{author}/{title.strip(".:")}') == False:
+        os.makedirs(f'{dir_of_file}/{author}/{title.strip(".:")}')
+    else:
+        pass
+    #copy everything from temp folder to new folder and delete the temp folder
+    os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title.strip(".:")}" /s /e')
+    os.system(f'rmdir /s /q "{dir_of_file}/temp"')
+
+
+def main(e_book_path,opf_location,filename,make_a_new_folder,ignore_MAL,manga_id):
     def get_orig_filename(filename):
         directory, filename = os.path.split(filename)
         # Remove the file extension
@@ -667,7 +688,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
     reque = send_request(url, headers, params)
     title_exists = check_MAL_existance(reque,title)
     
-    if title_exists[0] == True:
+    if title_exists[0] == True and ignore_MAL == False:
         url = f"https://api.myanimelist.net/v2/manga/{title_exists[1]}"
         headers = {
             "X-MAL-CLIENT-ID": f"{client_id}"
@@ -690,41 +711,57 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
         tree = ET.parse(opf_location)
         root = tree.getroot()
 
-
-        #make a new folder using author from xml
-        if make_a_new_folder == True:
-            
-
-            author = f'{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}'
-            title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
-            dir_of_file = get_orig_filename(filename)
-            title = sanitize_filename(title)
-            if os.path.isdir(f'{dir_of_file}/{author}/{title.strip(".:")}') == False:
-                os.makedirs(f'{dir_of_file}/{author}/{title.strip(".:")}')
-            else:
-                pass
-            #copy everything from temp folder to new folder and delete the temp folder
-            os.system(f'robocopy "{dir_of_file}/temp" "{dir_of_file}/{author}/{title.strip(".:")}" /s /e')
-            os.system(f'rmdir /s /q "{dir_of_file}/temp"')
-        for i in root:
-            for j in i:
-                if j.tag == "{http://purl.org/dc/elements/1.1/}identifier":
-                    future_id = j.text
-                    break
         
+        #make a new folder using author from xml
 
-        title = sanitize_filename(title)
-        dir_of_file = get_orig_filename(filename)
-        print(title)
-        try:
-            tree = ET.parse(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/OEBPS/content.opf')
-        except:
-            tree = ET.parse(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/EPUB/content.opf')
 
+    if ignore_MAL == True:
+        url = f"https://api.myanimelist.net/v2/manga/{manga_id}"
+        headers = {
+            "X-MAL-CLIENT-ID": f"{client_id}"
+        }
+        params = {
+            "fields": "main_picture,alternative_titles,main_picture,authors{first_name,last_name},mean,genres,start_date,synopsis,serialization,start_date"
+        }
+        response = send_request(url, headers, params)
+        if response.status_code == 200:
+            data = response.json()
+            # Process the data as needed
+        json_data = data
+        #save to json file
+        with open('data2.json', 'w',encoding='utf-8') as outfile:
+            json.dump(json_data, outfile, indent=4)
+        #load json file
+        with open('data2.json',encoding='utf-8') as json_file:
+            json_file = json.load(json_file)
+        #write to xml, then figure out a way to zip it into a epub
+        tree = ET.parse(opf_location)
         root = tree.getroot()
-        declaration = ET.Element('xml', version='1.0', encoding='utf-8')
-        root.insert(0, declaration)
-        literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_of_file,author)
+    if make_a_new_folder == True:
+        dir_of_file = get_orig_filename(filename)
+        make_a_new_folder_func(json_file,dir_of_file)
+    for i in root:
+        for j in i:
+            if j.tag == "{http://purl.org/dc/elements/1.1/}identifier":
+                future_id = j.text
+                break
+
+    title = sanitize_filename(f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}')
+    dir_of_file = get_orig_filename(filename)
+    print(title)
+    print(dir_of_file)
+    try:
+        tree = ET.parse(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/OEBPS/content.opf')
+    except:
+        tree = ET.parse(f'{dir_of_file}/{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}/{title.strip(".:")}/EPUB/content.opf')
+
+    root = tree.getroot()
+    declaration = ET.Element('xml', version='1.0', encoding='utf-8')
+    root.insert(0, declaration)
+    author = f'{json_file["authors"][0]["node"]["first_name"]} {json_file["authors"][0]["node"]["last_name"]}'
+    title = f'{json_file["alternative_titles"]["ja"]} - {json_file["title"]}'
+    title = sanitize_filename(title)
+    literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_of_file,author)
 
         
 
@@ -758,7 +795,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder):
     os.listdir(f'{folder_path}/OEBPS/images')[0]
     img = Image.open(f'{folder_path}/OEBPS/images/{os.listdir(f"{folder_path}/OEBPS/images")[0]}')
     width, height = img.size
-    literally_write_everything_to_xhtml(folder_path,width,height)
+    literally_write_everything_to_xhtml(folder_path)
     write_a_css_file(folder_path)
     append_manifest(folder_path)
     edit_spine(folder_path,0)
@@ -776,5 +813,5 @@ print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
 
-main(filename,opf_location,filename,True)
+main(filename,opf_location,filename,True,True,123362)
 #pause = input('pause')
