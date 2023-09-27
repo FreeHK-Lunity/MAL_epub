@@ -475,83 +475,91 @@ def literally_write_everything_to_xhtml(folder_path):
             width, height = img.size
         
 
-            # Create the XML tree
-            tree = ET.ElementTree()
+        # Create the XML tree
+        tree = ET.ElementTree()
 
 
-            # Create the declaration element
-            declaration = ET.Comment('xml version="1.0" encoding="UTF-8"')
-            tree._setroot(declaration)
+        # Create the declaration element
+        declaration = ET.Comment('xml version="1.0" encoding="UTF-8"')
+        tree._setroot(declaration)
 
-            html = ET.Element('html', xmlns='http://www.w3.org/1999/xhtml', xmlns_epub='http://www.idpf.org/2007/ops')
-            tree._setroot(html)
+        html = ET.Element('html', xmlns='http://www.w3.org/1999/xhtml', xmlns_epub='http://www.idpf.org/2007/ops')
+        tree._setroot(html)
 
-            head = ET.Element('head')
-            html.append(head)
+        head = ET.Element('head')
+        html.append(head)
 
-            title = ET.Element('title')
-            title.text = f'{i.strip(".png")}'
-            head.append(title)
+        title = ET.Element('title')
+        title.text = f'{i.strip(".png")}'
+        head.append(title)
 
-            link = ET.Element('link', href='style.css', type='text/css', rel='stylesheet')
-            head.append(link)
+        link = ET.Element('link', href='style.css', type='text/css', rel='stylesheet')
+        head.append(link)
 
-            meta = ET.Element('meta', name='viewport', content=f'width={width}, height={height}')
-            head.append(meta)
+        meta = ET.Element('meta', name='viewport', content=f'width={width}, height={height}')
+        head.append(meta)
 
-            body = ET.Element('body', style='')
-            html.append(body)
+        body = ET.Element('body', style='')
+        html.append(body)
 
-            img = ET.Element('img', width=f'{width}', height=f'{height}', src=f'../images/{i}')
-            div = ET.Element('div', style=f'text-align:center;top:0.0%;')
+        img = ET.Element('img', width=f'{width}', height=f'{height}', src=f'../images/{i}')
+        div = ET.Element('div', style=f'text-align:center;top:0.0%;')
+        div.append(img)
+        body.append(div)
+        div = ET.Element('div', id='PV')    
+        div2 = ET.Element('div', id='PV-TL')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TL-P", "ordinal":2}')
+        div2.append(a)
+        div.append(div2)
+        div2 = ET.Element('div', id='PV-TR')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TR-P", "ordinal":1}')
+        div2.append(a)
+        div.append(div2)
+        div2 = ET.Element('div', id='PV-BL')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BL-P", "ordinal":4}')
+        div2.append(a)
+        div.append(div2)
+        div2 = ET.Element('div', id='PV-BR')
+        a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BR-P", "ordinal":3}')
+        div2.append(a)
+        div.append(div2)
+        body.append(div)
+        list_of_ids = ['PV-TL-P','PV-TR-P','PV-BL-P','PV-BR-P']
+        xd = 0
+        for j in list_of_ids:
+            xd += 1
+            div = ET.Element('div', class_='PV-P', id=f'{j}', style='')
+            if xd == 1:
+                img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+            elif xd == 2:
+                img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+            elif xd == 3:
+                img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+            elif xd == 4:
+                img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
+                xd = 0
             div.append(img)
             body.append(div)
-            div = ET.Element('div', id='PV')    
-            div2 = ET.Element('div', id='PV-TL')
-            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TL-P", "ordinal":2}')
-            div2.append(a)
-            div.append(div2)
-            div2 = ET.Element('div', id='PV-TR')
-            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-TR-P", "ordinal":1}')
-            div2.append(a)
-            div.append(div2)
-            div2 = ET.Element('div', id='PV-BL')
-            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BL-P", "ordinal":4}')
-            div2.append(a)
-            div.append(div2)
-            div2 = ET.Element('div', id='PV-BR')
-            a = ET.Element('a', style='display:inline-block;width:100%;height:100%;', class_='app-amzn-magnify', data_app_amzn_magnify='{"targetId":"PV-BR-P", "ordinal":3}')
-            div2.append(a)
-            div.append(div2)
-            body.append(div)
-            list_of_ids = ['PV-TL-P','PV-TR-P','PV-BL-P','PV-BR-P']
-            xd = 0
-            for j in list_of_ids:
-                xd += 1
-                div = ET.Element('div', class_='PV-P', id=f'{j}', style='')
-                if xd == 1:
-                    img = ET.Element('img', style='position:absolute;left:0;top:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
-                elif xd == 2:
-                    img = ET.Element('img', style='position:absolute;right:0;top:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
-                elif xd == 3:
-                    img = ET.Element('img', style='position:absolute;left:0;bottom:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
-                elif xd == 4:
-                    img = ET.Element('img', style='position:absolute;right:0;bottom:0;', src=f'../images/{i}', width=f' {width*(3/2)}', height=f'{height*(3/2)}')
-                    xd = 0
-                div.append(img)
-                body.append(div)
-            #html.append(body)
-            #print(ET.tostring(root, encoding='utf-8', method='xml').decode())
-            #pause()
-            #tree = ET.ElementTree(root)
-            ET.indent(tree, '  ')
-            tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)
-            change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'r', encoding='utf-8')
-            change_classunderscore_to_class = change_classunderscore_to_class.read()
-            change_classunderscore_to_class2 = change_classunderscore_to_class.replace('class_', 'class')
-            change_classunderscore_to_class = open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'w', encoding='utf-8')
-            change_classunderscore_to_class.write(change_classunderscore_to_class2)
-            change_classunderscore_to_class.close()
+        #html.append(body)
+        #print(ET.tostring(root, encoding='utf-8', method='xml').decode())
+        #pause()
+        #tree = ET.ElementTree(root)
+        ET.indent(tree, '  ')
+
+        if i.endswith('.jpg'):
+            tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".jpg")}.xhtml', encoding='utf-8', xml_declaration=True)
+            with open(f'{folder_path}/OEBPS/xhtml/{i.strip(".jpg")}.xhtml', 'r+', encoding='utf-8') as file:
+                content = file.read().replace('class_', 'class')
+                file.seek(0)
+                file.write(content)
+                file.truncate()
+        elif i.endswith('.png'):
+            tree.write(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', encoding='utf-8', xml_declaration=True)        
+            with open(f'{folder_path}/OEBPS/xhtml/{i.strip(".png")}.xhtml', 'r+', encoding='utf-8') as file:
+                content = file.read().replace('class_', 'class')
+                file.seek(0)
+                file.write(content)
+                file.truncate()
 
         
 
@@ -813,5 +821,5 @@ print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
 
-main(filename,opf_location,filename,True,True,123362)
+main(filename,opf_location,filename,True,False,123362)
 #pause = input('pause')
