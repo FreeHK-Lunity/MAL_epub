@@ -821,5 +821,5 @@ print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
 
-main(filename,opf_location,filename,True,False,123362)
+main(filename,opf_location,filename,True,True,123362)
 #pause = input('pause')
