@@ -52,6 +52,9 @@ def sanitize_filename(filename):
 def make_xhtml():
     pass
 
+def get_numeric_part(filename):
+    return int(os.path.splitext(filename)[0].split('_')[0])
+
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -410,7 +413,8 @@ def literally_write_everything_to_content_opf(tree,root,json_file,future_id,dir_
 '''
 
 def append_manifest(folder_path):
-    for i in os.listdir(f'{folder_path}/OEBPS/images'):
+    sorted_filenames = sorted(os.listdir(f'{folder_path}/OEBPS/images'), key=get_numeric_part)
+    for i in sorted_filenames:
         i = os.path.splitext(i)[0] # strip file extension
         tree = ET.parse(f'{folder_path}/OEBPS/content.opf')
         root = tree.getroot()
@@ -449,15 +453,19 @@ def append_manifest(folder_path):
         
 
 def edit_spine(folder_path,xd):
-    for i in os.listdir(f'{folder_path}/OEBPS/images'):
+    sorted_filenames = sorted(os.listdir(f'{folder_path}/OEBPS/images'), key=get_numeric_part)
+    for i in sorted_filenames:
         xd +=1
-        i.strip('.png')
+
+                
         tree = ET.parse(f'{folder_path}/OEBPS/content.opf')
         root = tree.getroot()
         spine = root.find('{http://www.idpf.org/2007/opf}spine')
         spine.set('page-progression-direction', 'rtl')
         itemref = ET.Element('{http://www.idpf.org/2007/opf}itemref')
-        itemref.set('idref', f'page_{i.strip(".png")}')
+        for ext in ['.jpg', '.png', '.jpeg']:
+            if i.endswith(ext):
+                itemref.set('idref', f'page_{i.strip(ext)}')
         itemref.set('linear', 'yes')
         if xd == 1:
             itemref.set('properties', 'page-spread-right')
@@ -476,7 +484,7 @@ def literally_write_everything_to_xhtml(folder_path):
     for i in os.listdir(f'{folder_path}/OEBPS/images'):
         # I SWEAR THERE IS A BETTER WAY TO DO THIS
         # I CANT FIGURE IT OUT SO ILL JUST DO IT THE DUMB WAY
-        if i.endswith(('.jpg', '.png')):
+        if i.endswith(('.jpg', '.png', '.jpeg')):
             img_path = f'{folder_path}/OEBPS/images/{i}'
             img = Image.open(img_path)
             width, height = img.size
@@ -710,18 +718,18 @@ def edit_ncx(folder_path):
                     toc_tag = j.get('id')
                     toc_tag = toc_tag.split('_')
                     chapter_number = toc_tag[1]
-                    print(chapter_number)
+                    #print(chapter_number)
                     for k in j: # we need to set the src no here | this is the starting page of the chapter
                         if k.tag == '{http://www.daisy.org/z3986/2005/ncx/}content':
                             # this is the starting page of the chapter
                             #print(f'xhtml/{chapter_number}_{str(current_img_no).zfill(leading_digit)}.xhtml')
                             k.set('src', f'xhtml/{chapter_number}_{str(current_img_no).zfill(leading_digit)}.xhtml')
-                            print(k.attrib)
+                            # print(k.attrib)
                         for l in k: #this is where the actual page is stored
                             if l.tag == '{http://www.daisy.org/z3986/2005/ncx/}content':
                                 l.set('src', f'xhtml/{chapter_number}_{str(current_img_no).zfill(leading_digit)}.xhtml')
                                 current_img_no += 1
-                                print(l.attrib)
+                                # print(l.attrib)
     ET.indent(tree, '  ')
     tree.write(f'{folder_path}/OEBPS/toc.ncx')
     os.remove(f'{folder_path}/OEBPS/toc_indented.ncx')
@@ -930,5 +938,5 @@ print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
 
-main(filename,opf_location,filename,True,False,117650)
+main(filename,opf_location,filename,True,False,51309)
 #pause = input('pause')
