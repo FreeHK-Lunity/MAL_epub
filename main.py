@@ -13,6 +13,7 @@ from scipy.spatial.distance import hamming
 from ebooklib.utils import debug
 import re
 import threading
+import xml.dom.minidom
 #https://machinelearningknowledge.ai/ways-to-calculate-levenshtein-distance-edit-distance-in-python/
 def levenshtein_distance(s, t):
     m = len(s)
@@ -673,15 +674,65 @@ def make_a_new_folder_func(json_file,filename):
 
 # WIP 
 def edit_ncx(folder_path):
-    root = ET.fromstring(f'{folder_path}/OEBPS/toc.ncx')
+    with open(f'{folder_path}/OEBPS/toc.ncx', 'r', encoding='utf-8') as f:
+        xml_string = f.read()
 
-    # Get the maximum index value
-    max_index = 0
-    for nav_point in root.findall(".//navPoint"):
-        nav_point_id = nav_point.get("id")
-        index = int(nav_point_id.split("_")[-1])
-        max_index = max(max_index, index)
+    # Parse the XML string into a DOM object
+    dom = xml.dom.minidom.parseString(xml_string)
 
+    # Indent the DOM object
+    xml_string_indented = dom.toprettyxml()
+
+    # Export the indented XML string to a file
+    with open(f'{folder_path}/OEBPS/toc_indented.ncx', 'w') as f:
+        f.write(xml_string_indented)
+
+    tree = ET.parse(f'{folder_path}/OEBPS/toc_indented.ncx')
+    leading_digit = os.listdir(f'{folder_path}/OEBPS/images')[0].split('_')[1].split('.')[0]
+    leading_digit = len(leading_digit)
+    print(leading_digit)
+    root = tree.getroot()
+    # iterate 
+    current_img_no = 0
+    '''    
+    print(root)
+    for child in root:
+        print(child.tag, child.attrib)
+        for child2 in child:
+            print(child2.tag, child2.attrib)
+            for child3 in child2:
+                print(child3.tag, child3.attrib)
+    '''
+    for i in root:
+        if i.tag == '{http://www.daisy.org/z3986/2005/ncx/}navMap':
+            for j in i:
+                if j.tag == '{http://www.daisy.org/z3986/2005/ncx/}navPoint':
+                    toc_tag = j.get('id')
+                    toc_tag = toc_tag.split('_')
+                    chapter_number = toc_tag[1]
+                    print(chapter_number)
+                    for k in j: # we need to set the src no here | this is the starting page of the chapter
+                        if k.tag == '{http://www.daisy.org/z3986/2005/ncx/}content':
+                            # this is the starting page of the chapter
+                            #print(f'xhtml/{chapter_number}_{str(current_img_no).zfill(leading_digit)}.xhtml')
+                            k.set('src', f'xhtml/{chapter_number}_{str(current_img_no).zfill(leading_digit)}.xhtml')
+                            print(k.attrib)
+                        for l in k: #this is where the actual page is stored
+                            if l.tag == '{http://www.daisy.org/z3986/2005/ncx/}content':
+                                l.set('src', f'xhtml/{chapter_number}_{str(current_img_no).zfill(leading_digit)}.xhtml')
+                                current_img_no += 1
+                                print(l.attrib)
+    ET.indent(tree, '  ')
+    tree.write(f'{folder_path}/OEBPS/toc.ncx')
+    os.remove(f'{folder_path}/OEBPS/toc_indented.ncx')
+
+    
+    
+    '''  
+        current_img_no =+1
+    # k.set('src', f'xhtml/{k.get("src")}')
+    print(k.tag, k.attrib)
+    print('getting!')  
     # Determine the starting index for new data
     starting_index = max_index + 1
 
@@ -714,7 +765,7 @@ def edit_ncx(folder_path):
         starting_index += 1
 
     # Get the modified XML code
-    modified_xml_code = ET.tostring(root, encoding="unicode")
+    modified_xml_code = ET.tostring(root, encoding="unicode")'''
 
 
 
@@ -862,6 +913,7 @@ def main(e_book_path,opf_location,filename,make_a_new_folder,ignore_MAL,manga_id
     os.listdir(f'{folder_path}/OEBPS/images')[0]
     img = Image.open(f'{folder_path}/OEBPS/images/{os.listdir(f"{folder_path}/OEBPS/images")[0]}')
     width, height = img.size
+    edit_ncx(folder_path)
     literally_write_everything_to_xhtml(folder_path)
     write_a_css_file(folder_path)
     append_manifest(folder_path)
