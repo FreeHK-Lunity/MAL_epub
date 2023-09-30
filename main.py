@@ -692,7 +692,7 @@ def edit_ncx(folder_path):
     xml_string_indented = dom.toprettyxml()
 
     # Export the indented XML string to a file
-    with open(f'{folder_path}/OEBPS/toc_indented.ncx', 'w') as f:
+    with open(f'{folder_path}/OEBPS/toc_indented.ncx', 'w', encoding='utf-8') as f:
         f.write(xml_string_indented)
 
     tree = ET.parse(f'{folder_path}/OEBPS/toc_indented.ncx')
@@ -938,5 +938,5 @@ print(filename2)
 opf_location = find_opf(filename2)
 print(opf_location)
 
-main(filename,opf_location,filename,True,False,51309)
+main(filename,opf_location,filename,True,True,123362)
 #pause = input('pause')
